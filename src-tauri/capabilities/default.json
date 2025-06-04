@@ -18,6 +18,23 @@
     "http:default",
     "log:default",
     "store:default",
-    "process:default"
+    "process:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://*.cubidron.com"
+        },
+        {
+          "url": "https://phynaria.fr"
+        },
+        {
+          "url": "https://*.phynaria.fr"
+        },
+        {
+          "url": "https://*.npoint.io"
+        }
+      ]
+    }
   ]
 }
