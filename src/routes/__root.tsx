@@ -73,12 +73,12 @@ function Layout() {
         await options.init();
         setLoading("Please wait", "Initializing authentication...");
         // await auth.init();
-        if (useAuth.getState().user && useAuth.getState().users.length > 0) {
-          location.href.includes("/home") ||
-            nav({
-              to: "/home",
-            });
-        }
+        // if (useAuth.getState().user && useAuth.getState().users.length > 0) {
+        //   location.href.includes("/home") ||
+        //     nav({
+        //       to: "/home",
+        //     });
+        // }
         setLoading("Please wait", "Fetching news...");
         await news.fetch();
         setLoading("Please wait", "Remote initialization...");
@@ -170,19 +170,19 @@ function Layout() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!useAuth.getState().user) {
-      location.href.includes("/onboard") ||
-        nav({
-          to: "/auth",
-        });
-    } else {
-      location.href.includes("/home") ||
-        nav({
-          to: "/home",
-        });
-    }
-  }, [useAuth.getState().user]);
+  // useEffect(() => {
+  //   if (!useAuth.getState().user) {
+  //     location.href.includes("/onboard") ||
+  //       nav({
+  //         to: "/auth",
+  //       });
+  //   } else {
+  //     location.href.includes("/home") ||
+  //       nav({
+  //         to: "/home",
+  //       });
+  //   }
+  // }, [useAuth.getState().user]);
   return (
     <div className="flex flex-col relative w-svw h-svh bg-darker">
       <Outlet />

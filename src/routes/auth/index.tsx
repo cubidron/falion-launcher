@@ -1,22 +1,38 @@
+import Alert from "@/kit/alert";
+import { useAuth } from "@/store/auth";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const auth = useAuth();
+  const navigate = useNavigate();
   return (
     <>
       <h1>Falion Launcher</h1>
       <h4>Welcome to our server.</h4>
       <h2>Log In!</h2>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          //Login logic
+          // @ts-ignore
+          const username = (e.target as HTMLFormElement).name.value;
+          const res = await auth.offline(username);
+          if (res) {
+            navigate({
+              to: "/auth/confirm",
+            });
+          } else {
+            Alert({
+              title: "There is an error!",
+              message: "We cannot logged in!",
+            });
+          }
         }}
-        className="flex flex-col gap-1.5"
+        className="flex w-80 flex-col gap-1.5"
       >
         <input
           type="text"

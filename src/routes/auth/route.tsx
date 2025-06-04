@@ -14,6 +14,7 @@ function RouteComponent() {
         <img
           draggable="false"
           src="/bg.jpg"
+          loading="eager"
           className="absolute brightness-50 inset-0 size-full"
           alt=""
         />
@@ -25,6 +26,7 @@ function RouteComponent() {
           <img
             draggable="false"
             src="/logo.gif"
+            loading="eager"
             className="w-auto h-56"
             alt=""
           />

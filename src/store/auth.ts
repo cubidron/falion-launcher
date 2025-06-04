@@ -8,14 +8,15 @@ import { fetch } from "@tauri-apps/plugin-http";
 
 //SYSTEM AUTH
 interface IUser {
-  email?: string;
-  access_token: string;
-  username?: string;
+  access_token?: string;
+  username: string;
 }
 interface UserStore {
-  user?: IUser;
+  user: IUser | null;
   users: IUser[];
   init: () => Promise<void>;
+  offline: (username: string) => Promise<boolean>;
+  //OLD
   login: (user: { email: string; password: string }) => Promise<boolean>;
   logout: (user: IUser) => Promise<void>;
   switch: (account: IUser) => void;
@@ -26,7 +27,23 @@ interface UserStore {
 }
 
 export const useAuth = create<UserStore>((set, get) => ({
+  user: {
+    access_token: "",
+    email: "",
+    username: "Haume",
+  },
   users: [],
+
+  offline: async (username) => {
+    set((state) => ({
+      ...state,
+      user: {
+        username: username,
+      },
+    }));
+    return true;
+  },
+  //old
   init: async () => {
     try {
       let userData = await storage?.get<{ all: IUser[]; current?: IUser }>(

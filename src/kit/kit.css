@@ -18,7 +18,7 @@ input[type="search"],
 input[type="tel"],
 input[type="url"] */
 .TextField {
-  @apply h-9 px-3 font-medium text-white/50 text-sm bg-element outline-1 focus:-outline-offset-1 outline-offset-1 outline-transparent focus:outline-primary/60 backdrop-blur-3xl rounded-md ease-in-out duration-400;
+  @apply h-9 px-3 font-medium text-white placeholder:text-white/30 text-sm bg-element outline-1 focus:-outline-offset-1 outline-offset-1 outline-transparent focus:outline-primary/60 backdrop-blur-3xl rounded-md ease-in-out duration-400;
 }
 
 .Button {
@@ -35,6 +35,9 @@ h1 {
 }
 h2 {
   @apply text-2xl font-semibold text-white;
+}
+h3 {
+  @apply text-xl font-medium text-white;
 }
 h4 {
   @apply text-base font-light text-white;
