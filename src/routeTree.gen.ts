@@ -16,7 +16,8 @@ import { Route as AuthRouteImport } from './routes/auth/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AuthIndexImport } from './routes/auth/index'
-import { Route as HomeSettingsImport } from '../routes/home/settings
+import { Route as HomeSettingsImport } from './routes/home/settings'
+import { Route as HomeAboutImport } from './routes/home/about'
 import { Route as AuthConfirmImport } from './routes/auth/confirm'
 
 // Create/Update Routes
@@ -57,6 +58,12 @@ const HomeSettingsRoute = HomeSettingsImport.update({
   getParentRoute: () => HomeRouteRoute,
 } as any)
 
+const HomeAboutRoute = HomeAboutImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+
 const AuthConfirmRoute = AuthConfirmImport.update({
   id: '/confirm',
   path: '/confirm',
@@ -94,6 +101,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/confirm'
       preLoaderRoute: typeof AuthConfirmImport
       parentRoute: typeof AuthRouteImport
+    }
+    '/home/about': {
+      id: '/home/about'
+      path: '/about'
+      fullPath: '/home/about'
+      preLoaderRoute: typeof HomeAboutImport
+      parentRoute: typeof HomeRouteImport
     }
     '/home/settings': {
       id: '/home/settings'
@@ -136,11 +150,13 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 )
 
 interface HomeRouteRouteChildren {
+  HomeAboutRoute: typeof HomeAboutRoute
   HomeSettingsRoute: typeof HomeSettingsRoute
   HomeIndexRoute: typeof HomeIndexRoute
 }
 
 const HomeRouteRouteChildren: HomeRouteRouteChildren = {
+  HomeAboutRoute: HomeAboutRoute,
   HomeSettingsRoute: HomeSettingsRoute,
   HomeIndexRoute: HomeIndexRoute,
 }
@@ -154,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteRouteWithChildren
   '/home': typeof HomeRouteRouteWithChildren
   '/auth/confirm': typeof AuthConfirmRoute
+  '/home/about': typeof HomeAboutRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth/': typeof AuthIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -162,6 +179,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/confirm': typeof AuthConfirmRoute
+  '/home/about': typeof HomeAboutRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth': typeof AuthIndexRoute
   '/home': typeof HomeIndexRoute
@@ -173,6 +191,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteRouteWithChildren
   '/home': typeof HomeRouteRouteWithChildren
   '/auth/confirm': typeof AuthConfirmRoute
+  '/home/about': typeof HomeAboutRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth/': typeof AuthIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -185,17 +204,25 @@ export interface FileRouteTypes {
     | '/auth'
     | '/home'
     | '/auth/confirm'
+    | '/home/about'
     | '/home/settings'
     | '/auth/'
     | '/home/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/confirm' | '/home/settings' | '/auth' | '/home'
+  to:
+    | '/'
+    | '/auth/confirm'
+    | '/home/about'
+    | '/home/settings'
+    | '/auth'
+    | '/home'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/home'
     | '/auth/confirm'
+    | '/home/about'
     | '/home/settings'
     | '/auth/'
     | '/home/'
@@ -242,6 +269,7 @@ export const routeTree = rootRoute
     "/home": {
       "filePath": "home/route.tsx",
       "children": [
+        "/home/about",
         "/home/settings",
         "/home/"
       ]
@@ -249,6 +277,10 @@ export const routeTree = rootRoute
     "/auth/confirm": {
       "filePath": "auth/confirm.tsx",
       "parent": "/auth"
+    },
+    "/home/about": {
+      "filePath": "home/about.tsx",
+      "parent": "/home"
     },
     "/home/settings": {
       "filePath": "home/settings.tsx",

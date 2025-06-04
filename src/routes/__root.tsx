@@ -186,7 +186,7 @@ function Layout() {
   return (
     <div className="flex flex-col relative w-svw h-svh bg-darker">
       <Outlet />
-      <div className="flex border-dashed border-2 border-red-400 p-0.5 rounded-md fixed inset-0 size-max z-50 mx-auto bg-white/24 backdrop-blur-2xl text-white gap-2">
+      <div className="flex border-dashed border-2 border-red-400 p-0.5 rounded-md fixed inset-0 size-max z-50 mt-auto mb-16 mx-auto bg-white/24 backdrop-blur-2xl text-white gap-2">
         <input
           type="text"
           className="rounded-md px-2 py-1"

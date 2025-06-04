@@ -19,7 +19,7 @@ function RouteComponent() {
           alt=""
         />
         <ul className="flex flex-col justify-center items-center px-4 gap-2 relative">
-          <div className="h-8/12 -left-[200%] absolute bg-black rounded-full aspect-[8/24] blur-2xl"></div>
+          <div className="h-8/12 -left-[200%] pointer-events-none absolute bg-black rounded-full aspect-[8/24] blur-2xl"></div>
           <Socials axis="y" />
         </ul>
         <main className="absolute gap-2.5 inset-0 m-auto py-[6%] w-[32rem] mx-auto bg-gradient-to-t from-darker/96 to-darker/0 flex flex-col items-center justify-start size-full">
