@@ -27,7 +27,7 @@ input[type="url"] */
 }
 
 .hr {
-  @apply rounded-full h-[2px] w-full bg-white/30 mix-blend-difference;
+  @apply rounded-full h-[2px] w-2/5 mx-auto bg-white/20 mix-blend-difference;
 }
 
 h1 {
@@ -42,6 +42,12 @@ h3 {
 h4 {
   @apply text-base font-light text-white;
 }
+
+.NavButton {
+  @apply aspect-square relative overflow-hidden grid place-items-center rounded-lg bg-element outline-2 outline-transparent hover:outline-primary outline-offset-1 hover:-outline-offset-1 ease-in-out duration-300
+  before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-md before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-in-out hover:before:scale-100 hover:before:opacity-100;
+}
+
 @import "tailwindcss";
 
 @font-face {

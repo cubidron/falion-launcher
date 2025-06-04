@@ -170,19 +170,19 @@ function Layout() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (!useAuth.getState().user) {
-  //     location.href.includes("/onboard") ||
-  //       nav({
-  //         to: "/auth",
-  //       });
-  //   } else {
-  //     location.href.includes("/home") ||
-  //       nav({
-  //         to: "/home",
-  //       });
-  //   }
-  // }, [useAuth.getState().user]);
+  useEffect(() => {
+    if (!useAuth.getState().user) {
+      location.href.includes("/onboard") ||
+        nav({
+          to: "/auth",
+        });
+    } else {
+      location.href.includes("/home") ||
+        nav({
+          to: "/home",
+        });
+    }
+  }, [useAuth.getState().user]);
   return (
     <div className="flex flex-col relative w-svw h-svh bg-darker">
       <Outlet />
@@ -206,7 +206,7 @@ function Layout() {
             backgroundPosition: "center",
           }}
         />
-        <p className="relative z-10">Version 1.0.0</p>
+        <p className="relative z-10">powered by Cubidron</p>
         <p className="relative z-10">Not affiliated with Mojang Studios</p>
         <p className="relative z-10">2025 ©Falion Launcher</p>
       </footer>
