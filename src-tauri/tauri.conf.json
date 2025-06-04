@@ -19,9 +19,14 @@
         "minHeight": 768,
         "resizable": true,
         "transparent": true,
-        "decorations": false
+        "decorations": false,
+        "windowEffects": {
+          "effects": [],
+          "radius": 10
+        }
       }
     ],
+    "macOSPrivateApi": true,
     "security": {
       "csp": null
     }

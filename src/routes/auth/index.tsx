@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth/")({
@@ -24,19 +25,25 @@ function RouteComponent() {
           placeholder="Nickname"
           className="TextField text-center"
         />
-        <input
-          type="password"
-          name="password"
-          id="password"
-          placeholder="Password"
-          className="TextField text-center"
-        />
         <button type="submit" className="Button">
           Log In
         </button>
+        <span className="flex w-full items-center my-2 gap-2 text-xs">
+          <div className="hr" />
+          <span className="size-max text-nowrap">OR</span>
+          <div className="hr" />
+        </span>
+        <button className="Button flex items-center justify-center !h-20">
+          {/* log in with microsoft icon from fluent */}
+          <Icon icon="logos:microsoft" className="text-3xl" />
+        </button>
         <p className="!text-xs text-white/50 mt-1 text-center">
           Don't have an account?{" "}
-          <a href="" className="text-primary hover:underline">
+          <a
+            href="https://minecraft.net"
+            target="_blank"
+            className="text-primary hover:underline"
+          >
             Sign Up!
           </a>
         </p>

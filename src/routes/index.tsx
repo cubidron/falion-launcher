@@ -5,7 +5,7 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteComponent() {
-  const navigate = useNavigate();
-  navigate({ to: "/auth" });
-  return <></>;
+  // const navigate = useNavigate();
+  // navigate({ to: "/auth" });
+  // return <></>;
 }

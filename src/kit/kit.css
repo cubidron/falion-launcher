@@ -22,8 +22,12 @@ input[type="url"] */
 }
 
 .Button {
-  @apply relative h-9 overflow-hidden rounded-md bg-element px-3 text-sm font-medium text-white outline-1 outline-offset-1 outline-transparent backdrop-blur-3xl duration-500 ease-in-out hover:-outline-offset-1 hover:outline-primary/60
+  @apply relative h-9 *:relative overflow-hidden rounded-md bg-element px-3 text-sm font-medium text-white outline-1 outline-offset-1 outline-transparent backdrop-blur-3xl duration-500 ease-in-out hover:-outline-offset-1 hover:outline-primary/60
   before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-md before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-in-out hover:before:scale-100 hover:before:opacity-100;
+}
+
+.hr {
+  @apply rounded-full h-[2px] w-full bg-white/30 mix-blend-difference;
 }
 
 h1 {
