@@ -10,7 +10,7 @@ interface ILocalOptions {
   maxMemory?: number;
   fullScreen?: boolean;
   launchBehavior?: TLaunchBehavior;
-  selectedServer?: string;
+  selectedGame?: string;
   discordRpc?: boolean;
   optionalMods?: {
     fileName: string;
@@ -41,7 +41,7 @@ export const useOptions = create<IOptionsStore>((set) => ({
       launchBehavior: options?.launchBehavior ?? "minimize",
       maxMemory: options?.maxMemory ?? 4,
       fullScreen: options?.fullScreen ?? false,
-      selectedServer: options?.selectedServer,
+      selectedGame: options?.selectedGame,
       discordRpc: options?.discordRpc ?? true,
       optionalMods: options?.optionalMods ?? [],
     });
@@ -56,7 +56,7 @@ export const useOptions = create<IOptionsStore>((set) => ({
       launchBehavior: options.launchBehavior,
       maxMemory: options.maxMemory,
       fullScreen: options.fullScreen,
-      selectedServer: options.selectedServer,
+      selectedGame: options.selectedGame,
       discordRpc: options.discordRpc,
       optionalMods: options.optionalMods,
     });

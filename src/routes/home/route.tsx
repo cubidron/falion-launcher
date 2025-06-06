@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { platform } from "@tauri-apps/plugin-os";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/home")({
   component: RouteComponent,
@@ -16,6 +16,22 @@ function RouteComponent() {
   const remote = useRemote();
   const auth = useAuth();
   const [accountModal, setAccountModal] = useState(false);
+
+  useEffect(() => {
+    // set initial selected value
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!(e.target as Element).closest(`.account`)) {
+        setAccountModal(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    setTimeout(() => {
+      setAccountModal(false);
+    }, 0);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
   return (
     <>
       <div className="flex *:relative size-full relative">
@@ -26,13 +42,15 @@ function RouteComponent() {
           className="!absolute brightness-50 inset-0 size-full"
           alt=""
         />
-        <nav className="w-28 p-5 flex flex-col gap-4 bg-gradient-to-t from-black via-black/80 to-black/0">
-          {platform() == "macos" && <TitleButtons className="mx-auto mt-1" />}
+        <nav className="w-28 p-5 flex flex-col gap-4 bg-black/36 backdrop-blur">
+          {platform() == "macos" && (
+            <TitleButtons className="mx-auto mt-1.5 mb-3" />
+          )}
           <div className="aspect-square p-2 flex items-center jsucer-content bg-element rounded-lg">
             <img src="/allay.webp" alt="" />
           </div>
           <div className="hr"></div>
-          <ul className="flex flex-col h-full pt-0 p-1 gap-1.5">
+          <ul className="flex flex-col h-full pt-0 p-1 gap-2.5">
             <Link to="/home" className="NavButton">
               <Icon icon="mdi:home" className="text-3xl" />
             </Link>
@@ -52,11 +70,11 @@ function RouteComponent() {
         <div className="flex flex-col flex-1">
           <header
             data-tauri-drag-region
-            className={`h-16 relative *:relative flex pl-12 pr-1.5`}
+            className={`h-16 relative *:relative bg-black/36 backdrop-blur flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}
           >
-            <div className="w-full pointer-events-none scale-100 h-16 -mt-6 !absolute bg-black inset-0 mx-auto blur-xl"></div>
+            {/* <div className="w-full pointer-events-none scale-100 h-16 -mt-6 !absolute bg-black inset-0 mx-auto blur-xl"></div> */}
             {auth.user ? (
-              <span className="relative flex flex-col">
+              <span className="relative account flex flex-col">
                 <div
                   onClick={() => {
                     setAccountModal((prev) => !prev);
@@ -142,7 +160,9 @@ function RouteComponent() {
             </ul>
             {platform() != "macos" && <TitleButtons className="ml-auto" />}
           </header>
-          <main className="flex-1 px-12 pt-12"></main>
+          <main className="flex-1 w-full overflow-hidden">
+            <Outlet />
+          </main>
         </div>
       </div>
     </>

@@ -9,10 +9,10 @@ interface ISocial {
   url: string;
 }
 
-interface IServer {
+export interface IGame {
+  id: string;
   icon?: string;
   title?: string;
-  profile?: string;
   description?: string;
   version?: string;
   ip?: string;
@@ -50,7 +50,7 @@ interface IRemote {
     description: string;
   };
   social?: ISocial[];
-  servers?: IServer[];
+  games?: IGame[];
   version?: string;
   website?: string;
   notes?: string;

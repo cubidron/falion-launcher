@@ -186,7 +186,7 @@ function Layout() {
   return (
     <div className="flex flex-col relative w-svw h-svh bg-darker">
       <Outlet />
-      <div className="flex border-dashed border-2 border-red-400 p-0.5 rounded-md fixed inset-0 size-max z-50 mt-auto mb-16 mx-auto bg-white/24 backdrop-blur-2xl text-white gap-2">
+      {/* <div className="flex border-dashed border-2 border-red-400 p-0.5 rounded-md fixed inset-0 size-max z-50 mt-auto mb-16 mx-auto bg-white/24 backdrop-blur-2xl text-white gap-2">
         <input
           type="text"
           className="rounded-md px-2 py-1"
@@ -197,7 +197,7 @@ function Layout() {
             });
           }}
         />
-      </div>
+      </div> */}
       <footer className="h-11 text-xs text-white/60 bg-darker font-light flex justify-between items-center px-4 relative">
         <div
           className="absolute inset-0 w-full opacity-60 h-full bg-[url('/footer.jpeg')]"

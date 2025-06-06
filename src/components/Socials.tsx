@@ -17,7 +17,7 @@ export function Socials(props: { axis: "y" | "x" }) {
               href={social.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white size-6 hover:text-gray-300 transition-colors"
+              className="text-white/60 hover:text-white ease-gentle duration-200 size-6"
             >
               <Icon icon={social.icon} className="size-6" />
             </a>
