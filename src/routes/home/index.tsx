@@ -29,7 +29,7 @@ function RouteComponent() {
         className="flex flex-col mt-auto items-start p-12 pb-4"
       >
         <motion.img
-          key={game.id + Math.random()}
+          key={game.id + 3}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
@@ -43,7 +43,7 @@ function RouteComponent() {
           alt={`${game.title} icon`}
         />
         <motion.h1
-          key={game.id + Math.random()}
+          key={game.id + 2}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
@@ -56,7 +56,7 @@ function RouteComponent() {
           {game.title}
         </motion.h1>
         <motion.p
-          key={game.id + Math.random()}
+          key={game.id + 1}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
@@ -70,7 +70,7 @@ function RouteComponent() {
           {game.description}
         </motion.p>
         <motion.span
-          key={game.id + Math.random()}
+          key={game.id + 0}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
