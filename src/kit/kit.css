@@ -22,12 +22,12 @@ input[type="search"],
 input[type="tel"],
 input[type="url"] */
 .TextField {
-  @apply h-9 px-3 text-white placeholder:text-white/30 text-sm font-normal bg-dark outline-1 focus:-outline-offset-1 outline-offset-1 outline-transparent focus:outline-primary/60 backdrop-blur-3xl rounded-md ease-gentle duration-400;
+  @apply h-9 px-3 text-white placeholder:text-white/30 text-sm font-normal bg-dark outline-2 focus:-outline-offset-1 outline-offset-1 outline-transparent focus:outline-primary/60 backdrop-blur-3xl rounded-lg ease-gentle duration-400;
 }
 
 .Button {
-  @apply relative flex gap-1.5 items-center justify-center h-9 *:relative overflow-hidden rounded-md bg-element px-3 text-sm font-medium text-white outline-1 outline-offset-1 outline-transparent backdrop-blur-3xl duration-500 ease-gentle hover:-outline-offset-1 hover:outline-primary/60
-  before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-md before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-gentle hover:before:scale-100 hover:before:opacity-100;
+  @apply relative flex gap-1.5 items-center justify-center h-9 *:relative overflow-hidden rounded-lg bg-element px-3 text-sm font-medium text-white outline-2 outline-offset-1 outline-transparent backdrop-blur-3xl duration-500 ease-gentle hover:-outline-offset-1 hover:outline-primary/60
+  before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-lg before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-gentle hover:before:scale-100 hover:before:opacity-100;
 }
 
 .hr {
@@ -48,16 +48,16 @@ h4 {
 }
 
 .NavButton {
-  @apply aspect-square relative overflow-hidden grid place-items-center rounded-lg bg-element outline-1 outline-transparent hover:outline-primary outline-offset-1 hover:-outline-offset-1 ease-gentle duration-300
-  before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-md before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-gentle hover:before:scale-100 hover:before:opacity-100;
+  @apply aspect-square relative overflow-hidden grid place-items-center rounded-lg bg-element outline-2 outline-transparent hover:outline-primary outline-offset-1 hover:-outline-offset-1 ease-gentle duration-300
+  before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-lg before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-gentle hover:before:scale-100 hover:before:opacity-100;
 }
 
 .AnimatedGlow {
   @apply relative overflow-hidden
-  before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-md before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-gentle hover:before:scale-100 hover:before:opacity-100;
+  before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-lg before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-gentle hover:before:scale-100 hover:before:opacity-100;
 }
 .AnimatedBorder {
-  @apply outline-1 outline-transparent outline-offset-1 hover:-outline-offset-1 hover:outline-primary ease-gentle duration-300;
+  @apply outline-2 outline-transparent outline-offset-1 hover:-outline-offset-1 hover:outline-primary ease-gentle duration-300;
 }
 
 @import "tailwindcss";

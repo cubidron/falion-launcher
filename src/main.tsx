@@ -34,10 +34,6 @@ if (!rootElement.innerHTML) {
           border: 0;
           margin: 0;
           contain: content;
-          background-color: transparent;
-          background: transparent;
-          transition: background, background-color 0.3s;
-          transition-timing-function: ease-in-out;
           overflow: hidden;
           border-radius: ${platform() == "macos" ? 10 : 8}px;
         }

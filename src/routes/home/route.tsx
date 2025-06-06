@@ -42,11 +42,11 @@ function RouteComponent() {
           className="!absolute brightness-50 inset-0 size-full"
           alt=""
         />
-        <nav className="w-28 p-5 flex flex-col gap-4 bg-black/36 backdrop-blur">
+        <nav className="w-28 p-5 flex flex-col gap-4 bg-black/24 backdrop-blur">
           {platform() == "macos" && (
             <TitleButtons className="mx-auto mt-1.5 mb-3" />
           )}
-          <div className="aspect-square p-2 flex items-center jsucer-content bg-element rounded-lg">
+          <div className="aspect-square p-2 flex items-center jsucer-content bg-element/80 backdrop-blur rounded-lg">
             <img src="/allay.webp" alt="" />
           </div>
           <div className="hr"></div>
@@ -70,7 +70,7 @@ function RouteComponent() {
         <div className="flex flex-col flex-1">
           <header
             data-tauri-drag-region
-            className={`h-16 relative *:relative bg-black/36 backdrop-blur flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}
+            className={`h-16 z-50 relative *:relative bg-black/24 backdrop-blur flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}
           >
             {/* <div className="w-full pointer-events-none scale-100 h-16 -mt-6 !absolute bg-black inset-0 mx-auto blur-xl"></div> */}
             {auth.user ? (
@@ -160,7 +160,7 @@ function RouteComponent() {
             </ul>
             {platform() != "macos" && <TitleButtons className="ml-auto" />}
           </header>
-          <main className="flex-1 w-full overflow-hidden">
+          <main className="flex-1 relative w-full overflow-hidden">
             <Outlet />
           </main>
         </div>

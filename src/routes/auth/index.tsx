@@ -42,7 +42,8 @@ function RouteComponent() {
           className="TextField text-center"
         />
         <button type="submit" className="Button">
-          Log In <Icon icon="mdi:arrow-right" />
+          <p>Log In </p>
+          <Icon icon="mdi:arrow-right" />
         </button>
         <span className="flex w-full items-center my-2 gap-2 text-xs">
           <div className="hr" />

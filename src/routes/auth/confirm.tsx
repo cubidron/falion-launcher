@@ -44,7 +44,7 @@ function RouteComponent() {
           type="submit"
           className="Button items-center justify-center flex"
         >
-          Confirm
+          <p>Confirm</p>
         </Link>
         <p className="!text-xs text-white/50 mt-1 text-center">
           Isn't this you?{" "}
