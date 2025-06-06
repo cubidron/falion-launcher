@@ -29,7 +29,7 @@ function RouteComponent() {
         className="flex flex-col mt-auto items-start p-12 pb-4"
       >
         <motion.img
-          key={game.icon}
+          key={game.id + Math.random()}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
@@ -43,7 +43,7 @@ function RouteComponent() {
           alt={`${game.title} icon`}
         />
         <motion.h1
-          key={game.title}
+          key={game.id + Math.random()}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
@@ -56,7 +56,7 @@ function RouteComponent() {
           {game.title}
         </motion.h1>
         <motion.p
-          key={game.description}
+          key={game.id + Math.random()}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
@@ -70,7 +70,7 @@ function RouteComponent() {
           {game.description}
         </motion.p>
         <motion.span
-          key={game.id}
+          key={game.id + Math.random()}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
           transition={{
@@ -104,11 +104,12 @@ function RouteComponent() {
         }}
         className="w-full relative flex flex-col overflow-hidden"
       >
-        <motion.div layout className="w-full h-9">
+        <motion.div layout className="w-full shrink-0 h-9">
           <motion.button
             layout="position"
             onClick={() => setGameRow(!gameRow)}
             className="flex flex-col shrink-0 size-max cursor-pointer mb-2 items-center mx-auto relative overflow-hidden"
+            initial={false}
             animate={{
               paddingTop: !gameRow ? "0.75rem" : "0.25rem",
               paddingBottom: !gameRow ? "0.25rem" : "0.75rem",
@@ -121,6 +122,7 @@ function RouteComponent() {
             }}
           >
             <motion.div
+              initial={false}
               animate={{
                 rotate: gameRow ? 180 : 0,
                 y: gameRow ? 8 : -8,
