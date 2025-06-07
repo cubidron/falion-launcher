@@ -1,3 +1,6 @@
+import Alert from "@/kit/alert";
+import { setLoading } from "@/kit/loading";
+import { addNoti } from "@/kit/notification";
 import { useOptions } from "@/store/options";
 import { IGame, useRemote } from "@/store/remote";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -10,6 +13,21 @@ export const Route = createFileRoute("/home/")({
 });
 
 function RouteComponent() {
+  Alert({
+    title: "Test",
+    message: "test message",
+    action: () => {
+      Alert({
+        title: "Test2",
+        message: "test message2",
+        action: () => {
+          addNoti("Finisjhed");
+        },
+        force: true,
+      });
+    },
+  });
+
   const remote = useRemote();
   const options = useOptions();
   const [gameRow, setGameRow] = useState(false);
