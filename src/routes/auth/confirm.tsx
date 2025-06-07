@@ -10,8 +10,8 @@ function RouteComponent() {
   const auth = useAuth();
   return (
     <>
-      <h1>Falion Launcher</h1>
-      <h4>Confirm your account.</h4>
+      <h1 className="text-4xl font-extrabold">Falion Launcher</h1>
+      <p className="font-light">Confirm your account.</p>
       <div className="flex w-80 flex-col gap-1.5">
         <span className="bg-element py-4 gap-1 rounded-lg flex flex-col items-center justify-center">
           {auth.user && (

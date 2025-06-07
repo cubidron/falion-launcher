@@ -43,6 +43,7 @@ function RouteComponent() {
           alt={`${game.title} icon`}
         />
         <motion.h1
+          className="text-5xl font-extrabold mb-2"
           key={game.id + 2}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
           animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
@@ -65,7 +66,7 @@ function RouteComponent() {
             stiffness: 300,
             delay: 0.2,
           }}
-          className="line-clamp-3 max-w-[32rem] mb-3"
+          className="line-clamp-3 max-w-[32rem] mb-3 text-lg text-white/80 font-light leading-6"
         >
           {game.description}
         </motion.p>
@@ -142,7 +143,7 @@ function RouteComponent() {
         </motion.div>
         <div className="h-full contain-content flex *:relative overflow-x-auto bg-darker relative gap-4 p-5">
           <div
-            className="!absolute inset-0 w-full opacity-60 h-full bg-[url('/row.png')] border-t-8 border-darker/40"
+            className="!absolute inset-0 w-full opacity-60 h-full bg-[url('/row.png')] border-t-8 border-l-8 border-r-8 border-darker/40"
             style={{
               backgroundSize: "auto 192px",
               backgroundPosition: "center center",

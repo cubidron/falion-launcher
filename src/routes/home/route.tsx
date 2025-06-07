@@ -33,7 +33,7 @@ function RouteComponent() {
     };
   }, []);
   return (
-    <>
+    <div className="size-full flex flex-col">
       <div className="flex *:relative size-full relative">
         <img
           draggable="false"
@@ -70,9 +70,10 @@ function RouteComponent() {
         <div className="flex flex-col flex-1">
           <header
             data-tauri-drag-region
-            className={`h-16 z-50 relative *:relative bg-black/24 backdrop-blur flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}
+            className={`h-16 z-50 relative *:relative flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}
           >
             {/* <div className="w-full pointer-events-none scale-100 h-16 -mt-6 !absolute bg-black inset-0 mx-auto blur-xl"></div> */}
+            <div className="bg-black/24 backdrop-blur size-full !absolute left-0 top-0" />
             {auth.user ? (
               <span className="relative account flex flex-col">
                 <div
@@ -132,7 +133,7 @@ function RouteComponent() {
                       style={{
                         transformOrigin: "top center",
                       }}
-                      className="absolute top-full mt-1 z-50 bg-black/50 backdrop-blur-2xl h-max flex flex-col p-2 w-full rounded-lg"
+                      className="absolute top-full mt-1 z-50 bg-black/50 backdrop-blur-xl h-max flex flex-col p-2 w-full rounded-lg"
                     >
                       <h3 className="text-center !text-base mb-2">
                         Account Settings
@@ -165,6 +166,18 @@ function RouteComponent() {
           </main>
         </div>
       </div>
-    </>
+      <footer className="h-11 text-xs text-white/60 bg-darker font-light flex justify-between items-center px-4 relative">
+        <div
+          className="absolute inset-0 w-full opacity-60 h-full bg-[url('/footer.jpeg')]"
+          style={{
+            backgroundSize: "auto 128px",
+            backgroundPosition: "center",
+          }}
+        />
+        <p className="relative z-10">developed by Cubidron</p>
+        <p className="relative z-10">Not affiliated with Mojang Studios</p>
+        <p className="relative z-10">2025 ©Falion Launcher</p>
+      </footer>
+    </div>
   );
 }

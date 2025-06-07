@@ -12,9 +12,9 @@ function RouteComponent() {
   const navigate = useNavigate();
   return (
     <>
-      <h1>Falion Launcher</h1>
-      <h4>Welcome to our server.</h4>
-      <h2>Log In!</h2>
+      <h1 className="text-4xl font-extrabold">Falion Launcher</h1>
+      <p className="font-light">Welcome to our server.</p>
+      <h3 className="text-2xl font-semibold">Log In!</h3>
       <form
         onSubmit={async (e) => {
           e.preventDefault();

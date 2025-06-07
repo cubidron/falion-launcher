@@ -198,18 +198,6 @@ function Layout() {
           }}
         />
       </div>
-      <footer className="h-11 text-xs text-white/60 bg-darker font-light flex justify-between items-center px-4 relative">
-        <div
-          className="absolute inset-0 w-full opacity-60 h-full bg-[url('/footer.jpeg')]"
-          style={{
-            backgroundSize: "auto 128px",
-            backgroundPosition: "center",
-          }}
-        />
-        <p className="relative z-10">powered by Cubidron</p>
-        <p className="relative z-10">Not affiliated with Mojang Studios</p>
-        <p className="relative z-10">2025 ©Falion Launcher</p>
-      </footer>
     </div>
   );
 }

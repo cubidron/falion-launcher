@@ -34,19 +34,6 @@ input[type="url"] */
   @apply rounded-full h-[2px] w-2/5 mx-auto bg-white/20 mix-blend-difference;
 }
 
-h1 {
-  @apply text-5xl font-extrabold text-white;
-}
-h2 {
-  @apply text-2xl font-semibold text-white;
-}
-h3 {
-  @apply text-xl font-medium text-white;
-}
-h4 {
-  @apply text-base font-light text-white;
-}
-
 .NavButton {
   @apply aspect-square relative overflow-hidden grid place-items-center rounded-lg bg-element outline-2 outline-transparent hover:outline-primary outline-offset-1 hover:-outline-offset-1 ease-gentle duration-300
   before:absolute before:inset-0 before:scale-50 active:before:scale-200 active:before:duration-100 before:rounded-lg before:bg-gradient-to-r before:from-primary/6 before:via-primary/48 before:to-primary/6 before:opacity-0 before:blur-xl before:duration-500 before:ease-gentle hover:before:scale-100 hover:before:opacity-100;
