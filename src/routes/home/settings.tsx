@@ -2,6 +2,7 @@ import Slider from "@/kit/range";
 import { useOptions } from "@/store/options";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
+import { motion } from "motion/react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/home/settings")({
@@ -12,7 +13,7 @@ function RouteComponent() {
   const options = useOptions();
   const [maxPCMemory, setMaxPCMemory] = useState(8); // gb's
   return (
-    <div className="p-12 *:relative space-y-4 relative size-full bg-darker">
+    <motion.div className="p-12 *:relative space-y-4 relative size-full bg-darker">
       <div
         className="!absolute inset-0 w-full opacity-60 h-full bg-[url('/row.png')] border-t-8 border-l-8 border-r-8 border-darker/40"
         style={{
@@ -65,6 +66,6 @@ function RouteComponent() {
           className="TextField max-w-[28rem]"
         />
       </section>
-    </div>
+    </motion.div>
   );
 }

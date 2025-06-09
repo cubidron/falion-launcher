@@ -3,10 +3,16 @@ import { TitleButtons } from "@/kit/tauri/TitleBar";
 import { useAuth } from "@/store/auth";
 import { useRemote } from "@/store/remote";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useLocation,
+} from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { platform } from "@tauri-apps/plugin-os";
 import { useEffect, useState } from "react";
+import { AnimatedOutlet } from "@/kit/AOutlet";
 
 export const Route = createFileRoute("/home")({
   component: RouteComponent,
@@ -15,6 +21,7 @@ export const Route = createFileRoute("/home")({
 function RouteComponent() {
   const remote = useRemote();
   const auth = useAuth();
+  const location = useLocation();
   const [accountModal, setAccountModal] = useState(false);
 
   useEffect(() => {
@@ -162,7 +169,31 @@ function RouteComponent() {
             {platform() != "macos" && <TitleButtons className="ml-auto" />}
           </header>
           <main className="flex-1 relative w-full overflow-hidden">
-            <Outlet />
+            {/* <Outlet /> */}
+            <AnimatedOutlet
+              mode="popLayout"
+              initial={{
+                y: "100%",
+                opacity: [1, 0.9, 0.85, 0.8, 0],
+                filter: "blur(4px)",
+              }}
+              exit={{
+                y: "4%",
+                scale: 0.95,
+                opacity: [1, 0.9, 0.85, 0.8, 0],
+                filter: "blur(2px)",
+              }}
+              animate={{
+                y: 0,
+                filter: "blur(0px)",
+                opacity: [0, 0.8, 0.85, 0.9, 1],
+              }}
+              transition={{
+                duration: 0.7,
+                ease: [0.4, 0, 0.2, 1],
+              }}
+              className="size-full"
+            />
           </main>
         </div>
       </div>

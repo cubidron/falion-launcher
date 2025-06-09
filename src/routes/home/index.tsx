@@ -1,11 +1,8 @@
-import Alert from "@/kit/alert";
-import { setLoading } from "@/kit/loading";
-import { addNoti } from "@/kit/notification";
 import { useOptions } from "@/store/options";
 import { IGame, useRemote } from "@/store/remote";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
-import { easeInOut, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/home/")({
@@ -13,21 +10,6 @@ export const Route = createFileRoute("/home/")({
 });
 
 function RouteComponent() {
-  Alert({
-    title: "Test",
-    message: "test message",
-    action: () => {
-      Alert({
-        title: "Test2",
-        message: "test message2",
-        action: () => {
-          addNoti("Finisjhed");
-        },
-        force: true,
-      });
-    },
-  });
-
   const remote = useRemote();
   const options = useOptions();
   const [gameRow, setGameRow] = useState(false);
@@ -41,7 +23,11 @@ function RouteComponent() {
     }
   }, [options.selectedGame, remote.games]);
   return game ? (
-    <motion.div className="size-full flex flex-col">
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95, filter: "blur(4px)" }}
+      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+      className="size-full flex flex-col"
+    >
       <motion.section
         layout="position"
         className="flex flex-col mt-auto items-start p-12 pb-4"

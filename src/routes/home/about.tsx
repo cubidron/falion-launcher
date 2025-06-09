@@ -1,6 +1,7 @@
 import { useRemote } from "@/store/remote";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
+import { motion } from "motion/react";
 
 export const Route = createFileRoute("/home/about")({
   component: RouteComponent,
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/home/about")({
 function RouteComponent() {
   const remote = useRemote();
   return (
-    <div className="p-12 *:relative space-y-4 relative size-full bg-darker">
+    <motion.div className="p-12 *:relative space-y-4 relative size-full bg-darker">
       <div
         className="!absolute inset-0 w-full opacity-60 h-full bg-[url('/row.png')] border-t-8 border-l-8 border-r-8 border-darker/40"
         style={{
@@ -56,6 +57,6 @@ function RouteComponent() {
           things.
         </p>
       </section>
-    </div>
+    </motion.div>
   );
 }

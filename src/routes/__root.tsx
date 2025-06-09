@@ -7,11 +7,9 @@ import { useRemote } from "@/store/remote";
 import { load, Store } from "@tauri-apps/plugin-store";
 import {
   createRootRoute,
-  Link,
   Outlet,
   useLocation,
   useNavigate,
-  useRouter,
 } from "@tanstack/react-router";
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { info, error } from "@tauri-apps/plugin-log";
