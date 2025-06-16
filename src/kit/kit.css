@@ -49,11 +49,6 @@ input[type="url"] */
 
 @import "tailwindcss";
 
-@font-face {
-  font-family: "Sora";
-  src: url("/Font.ttf") format("truetype");
-}
-
 * {
   user-select: none;
   -webkit-user-select: none;

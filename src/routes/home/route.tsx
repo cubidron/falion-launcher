@@ -77,18 +77,16 @@ function RouteComponent() {
         <div className="flex flex-col flex-1">
           <header
             data-tauri-drag-region
-            className={`h-16 z-50 relative *:relative flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}
-          >
+            className={`h-16 z-50 relative *:relative flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}>
             {/* <div className="w-full pointer-events-none scale-100 h-16 -mt-6 !absolute bg-black inset-0 mx-auto blur-xl"></div> */}
-            <div className="bg-black/24 backdrop-blur size-full !absolute left-0 top-0" />
+            <div className="bg-black/24 backdrop-blur pointer-events-none size-full !absolute left-0 top-0" />
             {auth.user ? (
               <span className="relative account flex flex-col">
                 <div
                   onClick={() => {
                     setAccountModal((prev) => !prev);
                   }}
-                  className="gap-2 h-full rounded-lg hover:bg-white/3 ease-in-out duration-300 px-4 cursor-pointer flex items-center justify-center"
-                >
+                  className="gap-2 h-full rounded-lg hover:bg-white/3 ease-in-out duration-300 px-4 cursor-pointer flex items-center justify-center">
                   <img
                     className="size-8"
                     src={`https://visage.surgeplay.com/face/${
@@ -140,18 +138,16 @@ function RouteComponent() {
                       style={{
                         transformOrigin: "top center",
                       }}
-                      className="absolute top-full mt-1 z-50 bg-black/50 backdrop-blur-xl h-max flex flex-col p-2 w-full rounded-lg"
-                    >
+                      className="absolute top-full mt-1 z-50 bg-black/50 backdrop-blur-xl h-max flex flex-col p-2 w-full rounded-lg">
                       <h3 className="text-center !text-base mb-2">
                         Account Settings
                       </h3>
                       <ul className="flex flex-col">
-                        <button className="hover:bg-white/12 rounded-sm text-sm h-8 text-white/80 hover:text-white ease-in-out duration-200">
-                          Manage Account
-                        </button>
-                        <button className="hover:bg-white/12 rounded-sm text-sm h-8 text-white/80 hover:text-white ease-in-out duration-200">
+                        <Link
+                          to="/auth"
+                          className="hover:bg-white/12 flex items-center justify-center rounded-sm text-sm h-8 text-white/80 hover:text-white ease-in-out duration-200">
                           Change Account
-                        </button>
+                        </Link>
                         <button className="hover:bg-red-500/12 rounded-sm text-sm h-8 text-red-500/80 hover:text-red-500 ease-in-out duration-200">
                           Log Out!
                         </button>

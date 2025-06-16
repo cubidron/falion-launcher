@@ -1,4 +1,5 @@
-import { useLoading } from "@/kit/loading";
+import Alert from "@/kit/alert";
+import { setLoading, useLoading } from "@/kit/loading";
 import { useAuth } from "@/store/auth";
 import { useOptions } from "@/store/options";
 import { IGame, useRemote } from "@/store/remote";
@@ -16,7 +17,7 @@ function RouteComponent() {
   const remote = useRemote();
   const options = useOptions();
   const auth = useAuth();
-  const [gameRow, setGameRow] = useState(false);
+  const [gameRow, setGameRow] = useState(true);
   const [disabled, setDisabled] = useState(false);
   const [game, setGame] = useState<IGame>();
   const mainLoading = useLoading();
@@ -51,7 +52,6 @@ function RouteComponent() {
       setDisabled(true);
     }
   };
-
   useEffect(() => {
     let found = remote.games?.find((item) => item.id == options.selectedGame);
     if (found) {
@@ -64,12 +64,10 @@ function RouteComponent() {
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95, filter: "blur(4px)" }}
       animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-      className="size-full flex flex-col"
-    >
+      className="size-full flex flex-col">
       <motion.section
         layout="position"
-        className="flex flex-col mt-auto items-start p-12 pb-4"
-      >
+        className="flex flex-col mt-auto items-start p-12 pb-4">
         <motion.img
           key={game.id + 3}
           initial={{ opacity: 0, x: 20, scale: 0.95, filter: "blur(4px)" }}
@@ -94,8 +92,7 @@ function RouteComponent() {
             damping: 30,
             stiffness: 300,
             delay: 0.3,
-          }}
-        >
+          }}>
           {game.title}
         </motion.h1>
         <motion.p
@@ -108,8 +105,7 @@ function RouteComponent() {
             stiffness: 300,
             delay: 0.2,
           }}
-          className="line-clamp-3 max-w-[32rem] mb-3 text-lg text-white/80 font-light leading-6"
-        >
+          className="line-clamp-3 max-w-[32rem] mb-3 text-lg text-white/80 font-light leading-6">
           {game.description}
         </motion.p>
         <motion.span
@@ -121,13 +117,11 @@ function RouteComponent() {
             damping: 30,
             stiffness: 300,
             delay: 0.1,
-          }}
-        >
+          }}>
           <button
             onClick={handleLaunchClick}
             disabled={disabled}
-            className="relative outline-4 hover:outline-offset-0 -outline-offset-4 hover:outline-accent  active:scale-y-95 active:scale-x-105 overflow-hidden flex gap-1.5 rounded-xl group px-14 pl-12 py-4 ease-in-out duration-300 bg-white hover:bg-primary items-center justify-center"
-          >
+            className="relative overflow-hidden flex gap-1.5 rounded-xl group px-14 pl-12 py-4 ease-in-out duration-300 bg-white hover:bg-primary items-center justify-center">
             {/* <div className="absolute opacity-0 group-hover:opacity-100 duration-300 ease-in-out inset-0 size-full bg-gradient-to-br from-white/72 via-white/0 to-white/0" /> */}
             <Icon
               icon="mdi:play"
@@ -143,15 +137,14 @@ function RouteComponent() {
         layout="size"
         initial={false}
         animate={{
-          height: gameRow ? "auto" : 36,
+          height: gameRow ? "auto" : 32,
         }}
         transition={{
           duration: 0.7,
           ease: [0.25, 0.1, 0.25, 1],
         }}
-        className="w-full relative flex flex-col overflow-hidden"
-      >
-        <motion.div layout className="w-full shrink-0 h-9">
+        className="w-full relative flex flex-col bg-darker overflow-hidden">
+        <motion.div layout className="w-full shrink-0 h-8 relative z-50">
           <motion.button
             layout="position"
             onClick={() => setGameRow(!gameRow)}
@@ -166,8 +159,7 @@ function RouteComponent() {
             transition={{
               duration: 0.4,
               delay: 0.7,
-            }}
-          >
+            }}>
             <motion.div
               initial={false}
               animate={{
@@ -178,8 +170,7 @@ function RouteComponent() {
                 duration: 0.4,
                 delay: 0.7,
               }}
-              className="absolute top-1/2 transform -translate-y-1/2"
-            >
+              className="absolute top-1/2 transform -translate-y-1/2">
               <Icon icon="mdi-chevron-up" className="text-2xl leading-0" />
             </motion.div>
             <motion.p className="leading-4 relative z-10 text-nowrap">
@@ -187,14 +178,14 @@ function RouteComponent() {
             </motion.p>
           </motion.button>
         </motion.div>
-        <div className="h-full contain-content flex *:relative overflow-x-auto bg-darker relative gap-4 p-5">
-          <div
-            className="!absolute inset-0 w-full opacity-60 h-full bg-[url('/row.png')] border-t-8 border-l-8 border-r-8 border-darker/40"
-            style={{
-              backgroundSize: "auto 192px",
-              backgroundPosition: "center center",
-            }}
-          />
+        <div
+          className="!absolute inset-0 w-full opacity-60 h-full bg-[url('/row.png')] border-t-32 border-darker/40"
+          style={{
+            backgroundSize: "auto 192px",
+            backgroundPosition: "center center",
+          }}
+        />
+        <div className="h-full contain-content flex *:relative overflow-x-auto relative gap-4 p-5">
           {remote.games?.map((item) => (
             <span
               key={item.id}
@@ -204,8 +195,7 @@ function RouteComponent() {
                   selectedGame: item.id,
                 });
               }}
-              className={`flex cursor-pointer max-w-72 h-full w-max overflow-hidden rounded-lg bg-element/24 backdrop-blur outline-2 outline-white/12 ease-gentle duration-300 hover:outline-primary outline-offset-0 hover:outline-offset-1 ${item.id === game?.id ? "!-outline-offset-0 !outline-primary/24 bg-primary/6" : ""}`}
-            >
+              className={`flex cursor-pointer max-w-72 h-full w-max overflow-hidden rounded-lg bg-element/24 backdrop-blur outline-2 outline-white/12 ease-gentle duration-300 hover:outline-primary outline-offset-0 hover:outline-offset-1 ${item.id === game?.id ? "!-outline-offset-0 !outline-primary/24 bg-primary/6" : ""}`}>
               <div className="p-4 flex gap-1.5">
                 <img
                   className="h-16 w-auto"

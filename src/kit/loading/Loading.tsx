@@ -25,10 +25,10 @@ const Loading = () => {
 
   return (
     <section
-      className="fixed z-[100] inset-0 backdrop-blur bg-black/60 flex !bg-center !bg-cover flex-col items-center justify-center"
+      className="fixed z-[100] inset-0 bg-black/40 flex !bg-center !bg-cover flex-col items-center justify-center"
       data-tauri-drag-region>
       <div
-        className={`flex items-center bg-body px-12 py-8 rounded-xl min-w-[16rem] justify-center ${
+        className={`flex items-center bg-darker/60 backdrop-blur-2xl px-12 py-8 rounded-xl min-w-[16rem] justify-center ${
           !isLoading ? " flex-col-reverse" : "flex-col"
         }`}>
         {isLoading ? (
