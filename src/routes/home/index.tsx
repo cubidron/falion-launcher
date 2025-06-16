@@ -1,5 +1,8 @@
+import { useLoading } from "@/kit/loading";
+import { useAuth } from "@/store/auth";
 import { useOptions } from "@/store/options";
 import { IGame, useRemote } from "@/store/remote";
+import { launchMinecraft } from "@/tauri/commands";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
@@ -12,8 +15,43 @@ export const Route = createFileRoute("/home/")({
 function RouteComponent() {
   const remote = useRemote();
   const options = useOptions();
+  const auth = useAuth();
   const [gameRow, setGameRow] = useState(false);
+  const [disabled, setDisabled] = useState(false);
   const [game, setGame] = useState<IGame>();
+  const mainLoading = useLoading();
+
+  const handleLaunchClick = async () => {
+    try {
+      mainLoading.set("Veuillez patienter", "Lancement du jeu...");
+      await launchMinecraft({
+        after: options.launchBehavior!,
+        auth: {
+          Offline: {
+            username: auth.user?.username!,
+          },
+        },
+        directConnect: game?.directConnect!,
+        gameDir: options.appDir!,
+        version: game?.version!,
+        ip: game?.ip!,
+        port: game?.port!,
+        memory: options.maxMemory!,
+        profile: game?.id!,
+        remoteUrl: "http://40.160.19.221:8000",
+        fullscreen: options.fullScreen,
+        minecraft: game?.minecraft!,
+        optionalMods: game?.minecraft?.optionalMods!,
+      });
+      mainLoading.clear();
+      setDisabled(false);
+    } catch (err: any) {
+      mainLoading.clear();
+      console.log(err);
+      setDisabled(true);
+    }
+  };
+
   useEffect(() => {
     let found = remote.games?.find((item) => item.id == options.selectedGame);
     if (found) {
@@ -85,7 +123,11 @@ function RouteComponent() {
             delay: 0.1,
           }}
         >
-          <button className="relative outline-4 hover:outline-offset-0 -outline-offset-4 hover:outline-accent  active:scale-y-95 active:scale-x-105 overflow-hidden flex gap-1.5 rounded-xl group px-14 pl-12 py-4 ease-in-out duration-300 bg-white hover:bg-primary items-center justify-center">
+          <button
+            onClick={handleLaunchClick}
+            disabled={disabled}
+            className="relative outline-4 hover:outline-offset-0 -outline-offset-4 hover:outline-accent  active:scale-y-95 active:scale-x-105 overflow-hidden flex gap-1.5 rounded-xl group px-14 pl-12 py-4 ease-in-out duration-300 bg-white hover:bg-primary items-center justify-center"
+          >
             {/* <div className="absolute opacity-0 group-hover:opacity-100 duration-300 ease-in-out inset-0 size-full bg-gradient-to-br from-white/72 via-white/0 to-white/0" /> */}
             <Icon
               icon="mdi:play"

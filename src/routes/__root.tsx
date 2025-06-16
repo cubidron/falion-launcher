@@ -66,7 +66,7 @@ function Layout() {
         //   return await relaunch();
         // }
         info("Loading storage");
-        storage = await load("storage.json", { autoSave: true });
+        storage = await load("store.json", { autoSave: true });
         setLoading("Please wait", "Loading settings...");
         await options.init();
         setLoading("Please wait", "Initializing authentication...");
