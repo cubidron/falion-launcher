@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getVersion } from "@tauri-apps/api/app";
 import * as path from "@tauri-apps/api/path";
-import { storage } from "../routes/__root";
+import { STORAGE } from "@/constants";
 
 export type TLaunchBehavior = "keep" | "minimize" | "close";
 
@@ -31,7 +31,7 @@ interface IOptionsStore extends IOptions {
 }
 export const useOptions = create<IOptionsStore>((set) => ({
   init: async () => {
-    const options = await storage?.get<ILocalOptions>("options");
+    const options = await STORAGE?.get<ILocalOptions>("options");
     const appDir = await path.join(await path.dataDir(), ".falion");
 
     set({
@@ -52,7 +52,7 @@ export const useOptions = create<IOptionsStore>((set) => ({
       ...change,
     };
 
-    await storage?.set("options", {
+    await STORAGE?.set("options", {
       launchBehavior: options.launchBehavior,
       maxMemory: options.maxMemory,
       fullScreen: options.fullScreen,

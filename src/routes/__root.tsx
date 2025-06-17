@@ -4,7 +4,6 @@ import { useAuth } from "@/store/auth";
 import useNewses from "@/store/news";
 import { useOptions } from "@/store/options";
 import { useRemote } from "@/store/remote";
-import { load, Store } from "@tauri-apps/plugin-store";
 import {
   createRootRoute,
   Outlet,
@@ -14,7 +13,6 @@ import {
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { info, error } from "@tauri-apps/plugin-log";
 import { useEffect } from "react";
-export let storage: Store | undefined;
 
 export const Route = createRootRoute({
   component: () => <Layout />,
@@ -23,7 +21,7 @@ export const Route = createRootRoute({
 function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  // const auth = useAuth();
+  const auth = useAuth();
   const nav = useNavigate();
   const remote = useRemote();
   const news = useNewses();
@@ -65,18 +63,16 @@ function Layout() {
 
         //   return await relaunch();
         // }
-        info("Loading storage");
-        storage = await load("store.json", { autoSave: true });
         setLoading("Please wait", "Loading settings...");
         await options.init();
         setLoading("Please wait", "Initializing authentication...");
-        // await auth.init();
-        // if (useAuth.getState().user && useAuth.getState().users.length > 0) {
-        //   location.href.includes("/home") ||
-        //     nav({
-        //       to: "/home",
-        //     });
-        // }
+        await auth.init();
+        if (useAuth.getState().user) {
+          location.href.includes("/home") ||
+            nav({
+              to: "/home",
+            });
+        }
         setLoading("Please wait", "Fetching news...");
         await news.fetch();
         setLoading("Please wait", "Remote initialization...");
@@ -168,19 +164,19 @@ function Layout() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!useAuth.getState().user) {
-      location.href.includes("/onboard") ||
-        nav({
-          to: "/auth",
-        });
-    } else {
-      location.href.includes("/home") ||
-        nav({
-          to: "/home",
-        });
-    }
-  }, [useAuth.getState().user]);
+  // useEffect(() => {
+  //   if (!useAuth.getState().user) {
+  //     location.href.includes("/onboard") ||
+  //       nav({
+  //         to: "/auth",
+  //       });
+  //   } else {
+  //     location.href.includes("/home") ||
+  //       nav({
+  //         to: "/home",
+  //       });
+  //   }
+  // }, [useAuth.getState().user]);
   return (
     <div className="flex flex-col relative w-svw h-svh bg-darker">
       <Outlet />

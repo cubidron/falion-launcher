@@ -1,5 +1,6 @@
 import Alert from "@/kit/alert";
 import { useAuth } from "@/store/auth";
+import { microsoftAuth } from "@/tauri/commands";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -10,6 +11,25 @@ export const Route = createFileRoute("/auth/")({
 function RouteComponent() {
   const auth = useAuth();
   const navigate = useNavigate();
+
+  const handleMicrosoftLogin = async () => {
+    try {
+      const res = await microsoftAuth();
+      console.log(res);
+      if (res) {
+        auth.online(res);
+        navigate({
+          to: "/auth/confirm",
+        });
+      }
+    } catch (error) {
+      Alert({
+        title: "There is an error!",
+        message: "We cannot logged in!",
+      });
+    }
+  };
+
   return (
     <>
       <h1 className="text-4xl font-extrabold">Falion Launcher</h1>
@@ -50,7 +70,11 @@ function RouteComponent() {
           <span className="size-max text-nowrap">OR</span>
           <div className="hr" />
         </span>
-        <button className="Button flex items-center justify-center !h-20">
+        <button
+          onClick={async () => await handleMicrosoftLogin()}
+          type="button"
+          className="Button flex items-center justify-center !h-20"
+        >
           {/* log in with microsoft icon from fluent */}
           <Icon icon="logos:microsoft" className="text-3xl" />
         </button>

@@ -7,14 +7,7 @@ interface LaunchConfig {
     Offline?: {
       username: string;
     };
-    Online?: {
-      access_token: string;
-      refresh_token: string;
-      username: string;
-      xuid: string;
-      exp: string;
-      client_id: string;
-    };
+    Microsoft?: MinecraftAccount;
   };
   memory: number;
   profile: string;

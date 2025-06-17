@@ -27,7 +27,7 @@ pub struct Config {
     direct_connect: bool,
     minecraft: MinecraftConfig,
     game_dir: String,
-    memory: u64,
+    memory: f64,
     fullscreen: bool,
     after: String,
     remote_url: String,
@@ -86,7 +86,7 @@ pub async fn launch_minecraft(
         version: cfg.minecraft.version.clone(),
         authentication: cfg.auth,
         memory: Some(lyceris::minecraft::config::Memory::Megabyte(
-            cfg.memory * 512,
+            (cfg.memory * 512.0) as u64,
         )),
         version_name: None,
         loader: get_loader_by(&cfg.minecraft.loader.r#type, &cfg.minecraft.loader.version),
