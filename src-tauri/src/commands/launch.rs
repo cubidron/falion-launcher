@@ -86,14 +86,14 @@ pub async fn launch_minecraft(
         version: cfg.minecraft.version.clone(),
         authentication: cfg.auth,
         memory: Some(lyceris::minecraft::config::Memory::Megabyte(
-            (cfg.memory * 512.0) as u64,
+            (cfg.memory * 2.0 * 512.0) as u64,
         )),
         version_name: None,
         loader: get_loader_by(&cfg.minecraft.loader.r#type, &cfg.minecraft.loader.version),
         client: Some(state.client.clone()),
         java_version: None,
         runtime_dir: None,
-        custom_java_args: vec!["-Xcheck:jni".to_string()],
+        custom_java_args: vec![],
         custom_args: {
             let mut args = vec![];
             if cfg.direct_connect {

@@ -23,7 +23,7 @@ export const useModal = create<IModalStore>((set) => ({
   },
   close: (id) => {
     set((state) => ({
-      modals: state.modals.filter((item, i) => item._id !== id),
+      modals: state.modals.filter((item, _) => item._id !== id),
     }));
   },
 }));

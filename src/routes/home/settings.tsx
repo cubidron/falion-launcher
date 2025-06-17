@@ -1,11 +1,14 @@
+import { initializeDiscordState } from "@/helpers";
 import Dropdown from "@/kit/Dropdown";
 import Slider from "@/kit/range";
 import Switch from "@/kit/Switch";
 import { useOptions } from "@/store/options";
+import { useRemote } from "@/store/remote";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { destroy, start } from "tauri-plugin-drpc";
 
 export const Route = createFileRoute("/home/settings")({
   component: RouteComponent,
@@ -13,7 +16,8 @@ export const Route = createFileRoute("/home/settings")({
 
 function RouteComponent() {
   const options = useOptions();
-  const [maxPCMemory, setMaxPCMemory] = useState(8); // gb's
+  const remote = useRemote();
+  const [maxPCMemory, _] = useState(8); // gb's
   return (
     <motion.div className="p-12 *:relative relative size-full bg-darker">
       <div
@@ -101,11 +105,17 @@ function RouteComponent() {
           <span className="flex gap-2">
             <Switch
               value={options.discordRpc ?? false}
-              onChange={(e) => {
+              onChange={async (e) => {
                 options.set({
                   ...options,
                   discordRpc: e,
                 });
+                if (e) {
+                  await start(remote.discordRpc?.clientId!);
+                  await initializeDiscordState(remote.discordRpc!);
+                } else {
+                  await destroy();
+                }
               }}
             />
             Discord RPC
@@ -130,10 +140,6 @@ function RouteComponent() {
             <p>Developed by Cubidron</p>
             <p>All rights are reserved. - Not affiliated with Mojang Studios</p>
           </div>
-          <span className="flex items-center gap-2 text-sm">
-            Having issues?
-            <button className="Button !text-xs !h-7 !w-max">Report Bug</button>
-          </span>
         </section>
       </div>
     </motion.div>

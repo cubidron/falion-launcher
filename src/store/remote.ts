@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { fetch } from "@tauri-apps/plugin-http";
-import { LAUNCHER_BASE } from "../constants";
+import { WEB_API_BASE } from "../constants";
 
 interface ISocial {
   id: string;
@@ -80,7 +80,7 @@ interface RemoteStore extends IRemote {
 
 export const useRemote = create<RemoteStore>((set) => ({
   init: async () => {
-    const response = await fetch(`${LAUNCHER_BASE}/config`);
+    const response = await fetch(`${WEB_API_BASE}/config.json`);
 
     if (!response.ok) {
       throw new Error("Could not fetch the data");

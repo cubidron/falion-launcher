@@ -1,11 +1,8 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
 import Switch from "./Switch";
 import { useOptions } from "../store/options";
 import { IOptionalMod, useRemote } from "@/store/remote";
 
 export default function Mods({ mods }: { mods: IOptionalMod[] }) {
-  const [loading, setLoading] = useState(false);
   const remote = useRemote();
   const options = useOptions();
 
@@ -60,7 +57,7 @@ export default function Mods({ mods }: { mods: IOptionalMod[] }) {
                   />
                 </svg>
               </div>
-              <p>{mod.name.replace(".ignored", "")}</p>
+              <p>{mod.fileName.replace(".ignored", "")}</p>
               <Switch
                 className={`ml-auto ${mod.enabled || (i % 2 === 0 ? "bg-white/10" : "bg-white/5")}`}
                 value={mod.enabled!}

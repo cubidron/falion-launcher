@@ -17,6 +17,11 @@
     "log:default",
     "store:default",
     "process:default",
+    "drpc:allow-spawn-thread",
+    "drpc:allow-clear-activity",
+    "drpc:allow-is-running",
+    "drpc:allow-destroy-thread",
+    "drpc:allow-set-activity",
     {
       "identifier": "http:default",
       "allow": [
@@ -24,10 +29,10 @@
           "url": "https://*.cubidron.com"
         },
         {
-          "url": "https://phynaria.fr"
+          "url": "http://falion.net:8000/*"
         },
         {
-          "url": "https://*.phynaria.fr"
+          "url": "http://*.falion.net:8000/"
         },
         {
           "url": "https://*.npoint.io"

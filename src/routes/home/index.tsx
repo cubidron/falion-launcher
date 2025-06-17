@@ -9,7 +9,7 @@ import { IGame, useRemote } from "@/store/remote";
 import { launchMinecraft } from "@/tauri/commands";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/home/")({
@@ -39,6 +39,7 @@ function RouteComponent() {
   const handleLaunchClick = async () => {
     try {
       mainLoading.set("Veuillez patienter", "Lancement du jeu...");
+      console.log(optionalMods)
       await launchMinecraft({
         after: options.launchBehavior!,
         //@ts-ignore
@@ -55,7 +56,7 @@ function RouteComponent() {
         remoteUrl: WEB_API_BASE,
         fullscreen: options.fullScreen,
         minecraft: game?.minecraft!,
-        optionalMods: game?.minecraft?.optionalMods!,
+        optionalMods: optionalMods,
       });
       mainLoading.clear();
       setDisabled(false);

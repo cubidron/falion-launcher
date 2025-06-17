@@ -6,8 +6,6 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import {
   createFileRoute,
   Link,
-  Outlet,
-  useLocation,
   useNavigate,
 } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
@@ -22,7 +20,6 @@ export const Route = createFileRoute("/home")({
 function RouteComponent() {
   const remote = useRemote();
   const auth = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
   const [accountModal, setAccountModal] = useState(false);
 
@@ -53,7 +50,7 @@ function RouteComponent() {
         />
         <nav className="w-28 shrink-0 p-5 flex flex-col gap-4 bg-black/24 backdrop-blur">
           {platform() == "macos" && (
-            <TitleButtons className="mx-auto mt-1.5 mb-3" />
+            <TitleButtons className="mx-auto mt-1.5 mb-3 z-[9999]" />
           )}
           <div className="aspect-square p-2 flex items-center jsucer-content bg-element/80 backdrop-blur rounded-lg">
             <img src="/allay.webp" alt="" />
@@ -153,7 +150,7 @@ function RouteComponent() {
                         <button
                           onClick={() => {
                             useAuth.setState({
-                              user: null,
+                              user: undefined,
                             });
                             setAccountModal(false);
                             navigate({ to: "/auth", replace: true });

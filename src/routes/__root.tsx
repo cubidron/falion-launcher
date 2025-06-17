@@ -1,94 +1,80 @@
+import { initializeDiscordState } from "@/helpers";
 import Alert from "@/kit/alert";
 import { setLoading, useLoading, clearLoading } from "@/kit/loading";
 import { useAuth } from "@/store/auth";
-import useNewses from "@/store/news";
 import { useOptions } from "@/store/options";
 import { useRemote } from "@/store/remote";
 import {
   createRootRoute,
   Outlet,
-  useLocation,
   useNavigate,
 } from "@tanstack/react-router";
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { info, error } from "@tauri-apps/plugin-log";
 import { useEffect } from "react";
+import { start } from "tauri-plugin-drpc";
 
 export const Route = createRootRoute({
   component: () => <Layout />,
 });
 
+const disableShortcuts = (event: KeyboardEvent) => {
+  if (
+    (event.ctrlKey && event.code === "KeyQ") ||
+    (event.ctrlKey && event.code === "KeyP") ||
+    (event.ctrlKey && event.code === "KeyF") ||
+    event.code === "F5"
+  ) {
+    event.preventDefault();
+  }
+};
+const disableContextMenu = (e: MouseEvent) => e.preventDefault();
+const disableCombinationClicks = (e: MouseEvent) => {
+  if (e.ctrlKey || e.altKey) {
+    e.preventDefault();
+  }
+};
+
+
 function Layout() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const auth = useAuth();
   const nav = useNavigate();
   const remote = useRemote();
-  const news = useNewses();
   const options = useOptions();
 
   useEffect(() => {
     info("Mounting root component");
+    nav({
+      to: "/auth",
+    });
     let unlisten: UnlistenFn[] | undefined;
     (async () => {
       try {
         info("Checking updates");
-        // const update = await check();
-        // if (update) {
-        //   info(
-        //     `found update ${update.version} from ${update.date} with notes ${update.body}`,
-        //   );
-        //   let downloaded = 0;
-        //   let contentLength = 0;
-        //   await update.downloadAndInstall((event) => {
-        //     switch (event.event) {
-        //       case "Started":
-        //         contentLength = event.data.contentLength!;
-        //         setLoading(
-        //           "Update",
-        //           "Downloading update...",
-        //         );
-        //         break;
-        //       case "Progress":
-        //         downloaded += event.data.chunkLength;
-        //         useLoading.setState({
-        //           currentProgress: downloaded,
-        //           maxProgress: contentLength,
-        //         });
-        //         break;
-        //       case "Finished":
-        //         break;
-        //     }
-        //   });
-
-        //   return await relaunch();
-        // }
         setLoading("Please wait", "Loading settings...");
         await options.init();
         setLoading("Please wait", "Initializing authentication...");
         await auth.init();
-        if (useAuth.getState().user) {
-          location.href.includes("/home") ||
-            nav({
+        if (useAuth.getState().user?.username) {
+          console.log(useAuth.getState().user)
+          nav({
               to: "/home",
             });
         }
-        setLoading("Please wait", "Fetching news...");
-        await news.fetch();
         setLoading("Please wait", "Remote initialization...");
         await remote.init();
-        // if (useOptions.getState().discordRpc) {
-        //   try {
-        //     info("Initializing Discord RPC");
-        //     await start(remote.discordRpc?.clientId || DISCORD_CLIENT_ID);
-        //     await initializeDiscordState(useRemote.getState().discordRpc!);
-        //     info("Discord RPC initialized");
-        //   } catch (e: any) {
-        //     error(
-        //       `Error initializing Discord RPC: ${typeof e === "string" ? e : e?.message}`,
-        //     );
-        //   } // Ignore error.
-        // }
+        if (useOptions.getState().discordRpc) {
+          try {
+            info("Initializing Discord RPC");
+            await start(useRemote.getState().discordRpc?.clientId!);
+            await initializeDiscordState(useRemote.getState().discordRpc!);
+            info("Discord RPC initialized");
+          } catch (e: any) {
+            error(
+              `Error initializing Discord RPC: ${typeof e === "string" ? e : e?.message}`,
+            );
+          } // Ignore error.
+        }
         setLoading("Please wait", "Finalizing...");
         unlisten = [
           await listen(
@@ -152,46 +138,21 @@ function Layout() {
       }
     })();
 
-    // window.addEventListener("contextmenu", disableContextMenu);
-    // window.addEventListener("keydown", disableShortcuts);
-    // window.addEventListener("click", disableCombinationClicks);
+    window.addEventListener("contextmenu", disableContextMenu);
+    window.addEventListener("keydown", disableShortcuts);
+    window.addEventListener("click", disableCombinationClicks);
 
     return () => {
       unlisten?.map((fn) => fn());
-      // window.removeEventListener("contextmenu", disableContextMenu);
-      // window.removeEventListener("keydown", disableShortcuts);
-      // window.removeEventListener("click", disableCombinationClicks);
+      window.removeEventListener("contextmenu", disableContextMenu);
+      window.removeEventListener("keydown", disableShortcuts);
+      window.removeEventListener("click", disableCombinationClicks);
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (!useAuth.getState().user) {
-  //     location.href.includes("/onboard") ||
-  //       nav({
-  //         to: "/auth",
-  //       });
-  //   } else {
-  //     location.href.includes("/home") ||
-  //       nav({
-  //         to: "/home",
-  //       });
-  //   }
-  // }, [useAuth.getState().user]);
   return (
     <div className="flex flex-col relative w-svw h-svh bg-darker">
       <Outlet />
-      <div className="flex border-dashed top-2 border-red-400 p-0.5 rounded-md fixed inset-0 size-max z-50 mb-auto mb-16 mx-auto bg-white/24 backdrop-blur-2xl text-white gap-2">
-        <input
-          type="text"
-          className="rounded-md px-2 py-1"
-          value={location.href}
-          onChange={(e) => {
-            navigate({
-              to: e.target.value,
-            });
-          }}
-        />
-      </div>
     </div>
   );
 }

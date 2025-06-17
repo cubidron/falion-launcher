@@ -11,7 +11,6 @@ interface SelectBoxProps<T> {
 }
 
 export default function Dropdown<T>({
-  midi,
   options,
   id,
   value,

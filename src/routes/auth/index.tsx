@@ -1,4 +1,5 @@
 import Alert from "@/kit/alert";
+import { clearLoading, setLoading } from "@/kit/loading";
 import { useAuth } from "@/store/auth";
 import { microsoftAuth } from "@/tauri/commands";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -14,8 +15,9 @@ function RouteComponent() {
 
   const handleMicrosoftLogin = async () => {
     try {
+      setLoading("Please wait", "Logging in with Microsoft...");
       const res = await microsoftAuth();
-      console.log(res);
+      clearLoading();
       if (res) {
         auth.online(res);
         navigate({

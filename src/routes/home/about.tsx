@@ -31,10 +31,8 @@ function RouteComponent() {
         </span>
         <span className="text-lg font-light">Minecraft Server Provider</span>
         <p className="text-base font-light text-white/50">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit odio
-          alias quibusdam quia molestias vitae! Nihil eius ducimus numquam
-          debitis sunt soluta nam totam, temporibus placeat iste similique
-          ratione architecto.
+          {remote.about?.description ||
+          "Falion is a Minecraft server provider that offers high-performance, reliable, and customizable server hosting solutions for Minecraft enthusiasts. Our mission is to provide the best gaming experience with top-notch support and advanced features."}
         </p>
       </section>
       <section className="p-6 relative rounded-2xl flex flex-col gap-2 bg-dark/40 backdrop-blur">

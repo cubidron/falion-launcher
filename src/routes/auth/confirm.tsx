@@ -1,5 +1,4 @@
 import { useAuth } from "@/store/auth";
-import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth/confirm")({

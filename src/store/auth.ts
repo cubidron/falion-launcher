@@ -12,17 +12,13 @@ interface IUser {
   uuid?: string;
 }
 interface UserStore {
-  user: IUser | null;
+  user?: IUser;
   init: () => Promise<void>;
   offline: (username: string) => Promise<boolean>;
   online: (user: IUser) => Promise<boolean>;
 }
 
 export const useAuth = create<UserStore>((set) => ({
-  user: {
-    access_token: "",
-    username: "MHF_Steve",
-  },
   init: async () => {
     const user = await STORAGE.get<IUser>("user");
     if (user) {
