@@ -8,6 +8,7 @@ import {
   Link,
   Outlet,
   useLocation,
+  useNavigate,
 } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { platform } from "@tauri-apps/plugin-os";
@@ -22,6 +23,7 @@ function RouteComponent() {
   const remote = useRemote();
   const auth = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [accountModal, setAccountModal] = useState(false);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ function RouteComponent() {
           className="!absolute brightness-50 inset-0 size-full"
           alt=""
         />
-        <nav className="w-28 p-5 flex flex-col gap-4 bg-black/24 backdrop-blur">
+        <nav className="w-28 shrink-0 p-5 flex flex-col gap-4 bg-black/24 backdrop-blur">
           {platform() == "macos" && (
             <TitleButtons className="mx-auto mt-1.5 mb-3" />
           )}
@@ -74,10 +76,10 @@ function RouteComponent() {
             </Link>
           </ul>
         </nav>
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <header
             data-tauri-drag-region
-            className={`h-16 z-50 relative *:relative flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}>
+            className={`h-16 z-50 shrink-0 relative *:relative flex pl-12 ${platform() != "macos" ? "pr-1.5" : ""}`}>
             {/* <div className="w-full pointer-events-none scale-100 h-16 -mt-6 !absolute bg-black inset-0 mx-auto blur-xl"></div> */}
             <div className="bg-black/24 backdrop-blur pointer-events-none size-full !absolute left-0 top-0" />
             {auth.user ? (
@@ -148,7 +150,15 @@ function RouteComponent() {
                           className="hover:bg-white/12 flex items-center justify-center rounded-sm text-sm h-8 text-white/80 hover:text-white ease-in-out duration-200">
                           Change Account
                         </Link>
-                        <button className="hover:bg-red-500/12 rounded-sm text-sm h-8 text-red-500/80 hover:text-red-500 ease-in-out duration-200">
+                        <button
+                          onClick={() => {
+                            useAuth.setState({
+                              user: null,
+                            });
+                            setAccountModal(false);
+                            navigate({ to: "/auth", replace: true });
+                          }}
+                          className="hover:bg-red-500/12 rounded-sm text-sm h-8 text-red-500/80 hover:text-red-500 ease-in-out duration-200">
                           Log Out!
                         </button>
                       </ul>

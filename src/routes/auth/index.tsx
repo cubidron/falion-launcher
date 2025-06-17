@@ -40,6 +40,15 @@ function RouteComponent() {
           e.preventDefault();
           // @ts-ignore
           const username = (e.target as HTMLFormElement).name.value;
+          let regex = /^[a-zA-Z0-9_]{2,16}$/;
+          if (!username || !regex.test(username)) {
+            Alert({
+              title: "Invalid Nickname",
+              message:
+                "Nickname must be 2-16 characters long and can only contain letters, numbers, and underscores.",
+            });
+            return;
+          }
           const res = await auth.offline(username);
           if (res) {
             navigate({
@@ -52,12 +61,14 @@ function RouteComponent() {
             });
           }
         }}
-        className="flex w-80 flex-col gap-1.5"
-      >
+        className="flex w-80 flex-col gap-1.5">
         <input
           type="text"
           name="name"
           id="name"
+          spellCheck="false"
+          autoComplete="off"
+          autoCorrect="off"
           placeholder="Nickname"
           className="TextField text-center"
         />
@@ -73,8 +84,7 @@ function RouteComponent() {
         <button
           onClick={async () => await handleMicrosoftLogin()}
           type="button"
-          className="Button flex items-center justify-center !h-20"
-        >
+          className="Button flex items-center justify-center !h-20">
           {/* log in with microsoft icon from fluent */}
           <Icon icon="logos:microsoft" className="text-3xl" />
         </button>
@@ -83,8 +93,7 @@ function RouteComponent() {
           <a
             href="https://minecraft.net"
             target="_blank"
-            className="text-primary hover:underline"
-          >
+            className="text-primary hover:underline">
             Sign Up!
           </a>
         </p>
