@@ -174,7 +174,7 @@ function RouteComponent() {
             </ul>
             {platform() != "macos" && <TitleButtons className="ml-auto" />}
           </header>
-          <main className="flex-1 relative w-full overflow-hidden">
+          <main className="flex-1 relative w-full">
             {/* <Outlet /> */}
             <AnimatedOutlet
               mode="popLayout"

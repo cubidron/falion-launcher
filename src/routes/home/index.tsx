@@ -1,13 +1,15 @@
 import { WEB_API_BASE } from "@/constants";
 import DragWrapper from "@/kit/DragWrapper";
 import { useLoading } from "@/kit/loading";
+import { Modal } from "@/kit/Modal";
+import Mods from "@/kit/mods";
 import { useAuth } from "@/store/auth";
 import { useOptions } from "@/store/options";
 import { IGame, useRemote } from "@/store/remote";
 import { launchMinecraft } from "@/tauri/commands";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/home/")({
@@ -22,7 +24,18 @@ function RouteComponent() {
   const [disabled, setDisabled] = useState(false);
   const [game, setGame] = useState<IGame>();
   const mainLoading = useLoading();
-
+  const optionalMods =
+    remote.games
+      ?.find((s) => s.id === options.selectedGame)
+      ?.minecraft?.optionalMods.map((om) => {
+        om.enabled =
+          options.optionalMods?.find(
+            (om2) =>
+              om2.fileName === om.fileName &&
+              om2.profile === options.selectedGame
+          )?.enabled ?? om.default;
+        return om;
+      }) || [];
   const handleLaunchClick = async () => {
     try {
       mainLoading.set("Veuillez patienter", "Lancement du jeu...");
@@ -117,7 +130,8 @@ function RouteComponent() {
             damping: 30,
             stiffness: 300,
             delay: 0.1,
-          }}>
+          }}
+          className="flex gap-2 items-center">
           <button
             onClick={handleLaunchClick}
             disabled={disabled}
@@ -130,6 +144,18 @@ function RouteComponent() {
             <p className="relative font-black text-xl text-black group-hover:text-white duration-300 ease-in-out">
               PLAY
             </p>
+          </button>
+          <button
+            onClick={() => {
+              Modal.push({
+                children: <Mods mods={optionalMods} />,
+              });
+            }}
+            className="size-16 AnimatedGlow group AnimatedBorder rounded-xl grid place-items-center bg-element">
+            <Icon
+              icon="mdi:puzzle"
+              className="text-2xl text-white relative group-hover:scale-110 group-hover:rotate-45 duration-700 ease-in-out"
+            />
           </button>
         </motion.span>
       </motion.section>
