@@ -17,6 +17,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AuthIndexImport } from './routes/auth/index'
 import { Route as HomeSettingsImport } from './routes/home/settings'
+import { Route as HomeModrinthImport } from './routes/home/modrinth'
 import { Route as HomeAboutImport } from './routes/home/about'
 import { Route as AuthConfirmImport } from './routes/auth/confirm'
 
@@ -55,6 +56,12 @@ const AuthIndexRoute = AuthIndexImport.update({
 const HomeSettingsRoute = HomeSettingsImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+
+const HomeModrinthRoute = HomeModrinthImport.update({
+  id: '/modrinth',
+  path: '/modrinth',
   getParentRoute: () => HomeRouteRoute,
 } as any)
 
@@ -109,6 +116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeAboutImport
       parentRoute: typeof HomeRouteImport
     }
+    '/home/modrinth': {
+      id: '/home/modrinth'
+      path: '/modrinth'
+      fullPath: '/home/modrinth'
+      preLoaderRoute: typeof HomeModrinthImport
+      parentRoute: typeof HomeRouteImport
+    }
     '/home/settings': {
       id: '/home/settings'
       path: '/settings'
@@ -151,12 +165,14 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface HomeRouteRouteChildren {
   HomeAboutRoute: typeof HomeAboutRoute
+  HomeModrinthRoute: typeof HomeModrinthRoute
   HomeSettingsRoute: typeof HomeSettingsRoute
   HomeIndexRoute: typeof HomeIndexRoute
 }
 
 const HomeRouteRouteChildren: HomeRouteRouteChildren = {
   HomeAboutRoute: HomeAboutRoute,
+  HomeModrinthRoute: HomeModrinthRoute,
   HomeSettingsRoute: HomeSettingsRoute,
   HomeIndexRoute: HomeIndexRoute,
 }
@@ -171,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRouteRouteWithChildren
   '/auth/confirm': typeof AuthConfirmRoute
   '/home/about': typeof HomeAboutRoute
+  '/home/modrinth': typeof HomeModrinthRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth/': typeof AuthIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -180,6 +197,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/confirm': typeof AuthConfirmRoute
   '/home/about': typeof HomeAboutRoute
+  '/home/modrinth': typeof HomeModrinthRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth': typeof AuthIndexRoute
   '/home': typeof HomeIndexRoute
@@ -192,6 +210,7 @@ export interface FileRoutesById {
   '/home': typeof HomeRouteRouteWithChildren
   '/auth/confirm': typeof AuthConfirmRoute
   '/home/about': typeof HomeAboutRoute
+  '/home/modrinth': typeof HomeModrinthRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth/': typeof AuthIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -205,6 +224,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/auth/confirm'
     | '/home/about'
+    | '/home/modrinth'
     | '/home/settings'
     | '/auth/'
     | '/home/'
@@ -213,6 +233,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth/confirm'
     | '/home/about'
+    | '/home/modrinth'
     | '/home/settings'
     | '/auth'
     | '/home'
@@ -223,6 +244,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/auth/confirm'
     | '/home/about'
+    | '/home/modrinth'
     | '/home/settings'
     | '/auth/'
     | '/home/'
@@ -270,6 +292,7 @@ export const routeTree = rootRoute
       "filePath": "home/route.tsx",
       "children": [
         "/home/about",
+        "/home/modrinth",
         "/home/settings",
         "/home/"
       ]
@@ -280,6 +303,10 @@ export const routeTree = rootRoute
     },
     "/home/about": {
       "filePath": "home/about.tsx",
+      "parent": "/home"
+    },
+    "/home/modrinth": {
+      "filePath": "home/modrinth.tsx",
       "parent": "/home"
     },
     "/home/settings": {

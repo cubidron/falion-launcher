@@ -45,3 +45,10 @@ interface MinecraftAccount {
 export async function microsoftAuth(): Promise<MinecraftAccount> {
   return await invoke("microsoft_auth");
 }
+
+export async function downloadFile(
+  url: string,
+  destination: string
+): Promise<void> {
+  return await invoke("download_file", { url, destination });
+}

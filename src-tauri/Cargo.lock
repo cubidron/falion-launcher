@@ -1234,6 +1234,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-drpc",
+ "tauri-plugin-fs",
  "tauri-plugin-http",
  "tauri-plugin-log",
  "tauri-plugin-opener",

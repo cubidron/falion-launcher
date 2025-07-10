@@ -39,7 +39,6 @@ function RouteComponent() {
   const handleLaunchClick = async () => {
     try {
       mainLoading.set("Veuillez patienter", "Lancement du jeu...");
-      console.log(optionalMods)
       await launchMinecraft({
         after: options.launchBehavior!,
         //@ts-ignore

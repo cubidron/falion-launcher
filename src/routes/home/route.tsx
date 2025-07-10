@@ -63,6 +63,9 @@ function RouteComponent() {
             <Link to="/home/about" className="NavButton">
               <Icon icon="mdi:information" className="text-3xl" />
             </Link>
+            <Link to="/home/modrinth" className="NavButton">
+              <Icon icon="mdi:compass" className="text-3xl" />
+            </Link>
             {remote.website && (
               <a href={remote.website} target="_blank" className="NavButton">
                 <Icon icon="mdi:web" className="text-3xl" />
