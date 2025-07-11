@@ -57,14 +57,15 @@ function RouteComponent() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('[data-dropdown]')) {
+      if (!target.closest("[data-dropdown]")) {
         setIsDropdownOpen(false);
       }
     };
 
     if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isDropdownOpen]);
 
@@ -114,9 +115,8 @@ function RouteComponent() {
             });
             setModVersionCache((prev) => ({ ...prev, ...versionCache }));
 
-            // After loading versions, check installation status only if we have a selected game
-            // and we haven't checked this game yet
-            if (selectedGameId && selectedGameId !== lastCheckedGame) {
+            // Always check installation status for new mods if we have a selected game
+            if (selectedGameId) {
               checkModsInstallationStatus(data.hits, selectedGameId);
             }
           });
@@ -142,25 +142,41 @@ function RouteComponent() {
   // Check installation status when game selection changes
   useEffect(() => {
     if (selectedGameId && selectedGameId !== lastCheckedGame) {
-      // Clear previous status when switching games
+      // Clear previous status only when switching games
       setModInstallStatus({});
+      setLastCheckedGame(selectedGameId);
 
       if (
         modpacks.length > 0 &&
         Object.keys(modVersionCache).length > 0 &&
         !checkingInstallStatus
       ) {
-        setLastCheckedGame(selectedGameId);
         checkModsInstallationStatus(modpacks, selectedGameId);
       }
     }
   }, [
     selectedGameId,
-    modpacks,
-    modVersionCache,
     lastCheckedGame,
-    checkingInstallStatus,
   ]);
+
+  // Additional effect to ensure installation status is checked when all data is ready
+  useEffect(() => {
+    if (
+      selectedGameId &&
+      modpacks.length > 0 &&
+      Object.keys(modVersionCache).length > 0 &&
+      !checkingInstallStatus
+    ) {
+      // Check if we have any of the current mods in our status already
+      const currentModIds = modpacks.map(mod => mod.project_id || mod.slug);
+      const hasStatusForCurrentMods = currentModIds.some(modId => modInstallStatus.hasOwnProperty(modId));
+      
+      if (!hasStatusForCurrentMods) {
+        console.log("Triggering installation status check for new mods");
+        checkModsInstallationStatus(modpacks, selectedGameId);
+      }
+    }
+  }, [selectedGameId, modpacks, modVersionCache, checkingInstallStatus]);
 
   // Debug effect to log status changes
   useEffect(() => {
@@ -185,13 +201,25 @@ function RouteComponent() {
       }
 
       if (versions && versions.length > 0) {
-        // Check only the first few versions to be faster
-        for (const version of versions.slice(0, 3)) {
-          for (const file of version.files) {
-            const modPath = `${localOptions.appDir}/games/${gameId}/mods/${file.filename}`;
-            const fileExists = await exists(modPath);
-            if (fileExists) {
-              return true;
+        // Check more versions to ensure we catch installed mods
+        const versionsToCheck = versions.slice(0, 10); // Check first 10 versions
+        
+        for (const version of versionsToCheck) {
+          if (version.files && Array.isArray(version.files)) {
+            for (const file of version.files) {
+              if (file.filename) {
+                const modPath = `${localOptions.appDir}/games/${gameId}/mods/${file.filename}`;
+                try {
+                  const fileExists = await exists(modPath);
+                  if (fileExists) {
+                    console.log(`Found installed mod: ${file.filename} for ${modId}`);
+                    return true;
+                  }
+                } catch (existsError) {
+                  console.warn(`Error checking file ${modPath}:`, existsError);
+                  // Continue checking other files instead of failing completely
+                }
+              }
             }
           }
         }
@@ -212,29 +240,51 @@ function RouteComponent() {
   ) => {
     if (checkingInstallStatus) return; // Prevent multiple simultaneous checks
 
+    console.log(`Checking installation status for ${mods.length} mods in game: ${gameId}`);
     setCheckingInstallStatus(true);
-    const statusUpdates: { [modId: string]: boolean } = {};
 
     try {
-      // Process all mods in parallel with a reasonable concurrency limit
-      const checkPromises = mods.map(async (mod) => {
-        const modId = mod.project_id || mod.slug;
-        const isInstalled = await checkSingleModInstallation(modId, gameId);
-        return { modId, isInstalled };
-      });
+      // Process mods in smaller batches to improve perceived performance
+      const batchSize = 5;
+      const batches = [];
+      for (let i = 0; i < mods.length; i += batchSize) {
+        batches.push(mods.slice(i, i + batchSize));
+      }
 
-      const results = await Promise.all(checkPromises);
+      for (const batch of batches) {
+        const checkPromises = batch.map(async (mod) => {
+          const modId = mod.project_id || mod.slug;
+          try {
+            const isInstalled = await checkSingleModInstallation(modId, gameId);
+            return { modId, isInstalled, error: null };
+          } catch (error) {
+            console.error(`Error checking mod ${modId}:`, error);
+            return { modId, isInstalled: false, error };
+          }
+        });
 
-      // Update all statuses at once to prevent flickering
-      results.forEach(({ modId, isInstalled }) => {
-        statusUpdates[modId] = isInstalled;
-      });
+        const results = await Promise.all(checkPromises);
 
-      setModInstallStatus(statusUpdates);
+        // Update statuses incrementally after each batch
+        setModInstallStatus((prevStatus) => {
+          const newStatus = { ...prevStatus };
+          results.forEach(({ modId, isInstalled }) => {
+            newStatus[modId] = isInstalled;
+          });
+          return newStatus;
+        });
+
+        // Small delay between batches to prevent UI blocking
+        if (batches.indexOf(batch) < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+      }
+      
+      const totalInstalled = Object.values(modInstallStatus).filter(Boolean).length;
+      console.log(`Installation status check completed: ${totalInstalled} mods installed`);
     } catch (error) {
       console.error("Error checking installation status:", error);
     } finally {
-      console.log("Installation status updates completed");
       setCheckingInstallStatus(false);
     }
   };
@@ -321,7 +371,10 @@ function RouteComponent() {
       // Check if file already exists before downloading
       const fileExists = await exists(downloadPath);
       if (fileExists) {
-        alert(`${modpack.title} is already installed for this game.`);
+        Alert({
+          title: "Warning",
+          message: `${modpack.title} is already installed for this game.`,
+        });
         return;
       }
 
@@ -333,21 +386,36 @@ function RouteComponent() {
       // Download the file using Tauri command
       await downloadFile(primaryFile.url, downloadPath);
 
-      // Refresh installation status for this specific mod
-      const isNowInstalled = await checkSingleModInstallation(modId, gameId);
+      // Wait a moment for the file to be written
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Force update the status immediately
       setModInstallStatus((prev) => ({
         ...prev,
-        [modId]: isNowInstalled,
+        [modId]: true, // Set to true immediately
       }));
+
+      // Also update the cache to reflect the new file
+      if (modVersionCache[modId]) {
+        // Find the downloaded file in the versions and mark it as installed
+        const targetFile = primaryFile.filename;
+        console.log(`Mod ${modpack.title} (${targetFile}) has been installed`);
+      }
+
+      Alert({
+        title: "Success",
+        message: `${modpack.title} has been successfully installed!`,
+      });
 
       console.log(
         `Successfully downloaded ${modpack.title} for ${selectedGame.title || selectedGame.id}`
       );
     } catch (error) {
       console.error(`Failed to download ${modpack.title}:`, error);
-      alert(
-        `Failed to download ${modpack.title}: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      Alert({
+        title: "Error",
+        message: `Failed to download ${modpack.title}: ${error instanceof Error ? error.message : "Unknown error"}`,
+      });
     } finally {
       setDownloading((prev) => prev.filter((id) => id !== modId));
     }
@@ -355,6 +423,11 @@ function RouteComponent() {
 
   const isModInstalled = (modId: string): boolean => {
     return modInstallStatus[modId] || false;
+  };
+
+  const isModBeingChecked = (modId: string): boolean => {
+    // If we're checking install status and this mod doesn't have a status yet, it's being checked
+    return checkingInstallStatus && !modInstallStatus.hasOwnProperty(modId);
   };
 
   const handleInstallClick = (modpack: ModPack) => {
@@ -365,7 +438,10 @@ function RouteComponent() {
 
     const modId = modpack.project_id || modpack.slug;
     if (isModInstalled(modId)) {
-      alert(`${modpack.title} is already installed for the selected game.`);
+      Alert({
+        title: "Info",
+        message: `${modpack.title} is already installed for the selected game.`,
+      });
       return;
     }
 
@@ -472,21 +548,26 @@ function RouteComponent() {
                   className="w-full px-4 py-3 bg-white/10 backdrop-blur border border-white/20 rounded-lg text-white focus:outline-none focus:border-primary transition-all duration-200 flex items-center justify-between group hover:bg-white/15"
                 >
                   <span className="text-sm">
-                    {selectedGameId 
-                      ? remote.games?.find(game => game.id === selectedGameId)?.title || selectedGameId
-                      : "Select a game..."
-                    }
+                    {selectedGameId
+                      ? remote.games?.find((game) => game.id === selectedGameId)
+                          ?.title || selectedGameId
+                      : "Select a game..."}
                   </span>
-                  <svg 
-                    className={`w-4 h-4 text-white/60 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className={`w-4 h-4 text-white/60 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
-                
+
                 {isDropdownOpen && (
                   <div className="absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-lg shadow-xl z-50 overflow-hidden">
                     {!selectedGameId && (
@@ -503,16 +584,32 @@ function RouteComponent() {
                             setIsDropdownOpen(false);
                           }}
                           className={`w-full px-4 py-3 text-left text-sm transition-colors duration-150 flex items-center gap-3 hover:bg-white/10 ${
-                            selectedGameId === game.id ? 'bg-primary/20 text-primary' : 'text-white'
+                            selectedGameId === game.id
+                              ? "bg-primary/20 text-primary"
+                              : "text-white"
                           }`}
                         >
-                          <div className={`w-2 h-2 rounded-full ${
-                            selectedGameId === game.id ? 'bg-primary' : 'bg-white/20'
-                          }`} />
-                          <span className="truncate">{game.title || game.id}</span>
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              selectedGameId === game.id
+                                ? "bg-primary"
+                                : "bg-white/20"
+                            }`}
+                          />
+                          <span className="truncate">
+                            {game.title || game.id}
+                          </span>
                           {selectedGameId === game.id && (
-                            <svg className="w-4 h-4 ml-auto text-primary" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            <svg
+                              className="w-4 h-4 ml-auto text-primary"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
                             </svg>
                           )}
                         </button>
@@ -581,8 +678,7 @@ function RouteComponent() {
                           "Installed"
                         ) : !selectedGameId ? (
                           "Select Game"
-                        ) : checkingInstallStatus &&
-                          Object.keys(modInstallStatus).length === 0 ? (
+                        ) : isModBeingChecked(modpack.project_id || modpack.slug) ? (
                           <>
                             <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
                             <span>Checking...</span>

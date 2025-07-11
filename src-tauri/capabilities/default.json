@@ -45,10 +45,11 @@
       "identifier": "fs:allow-exists",
       "allow": [
         {
-          "path": "*/**"
+          "path": "$DATA/.falion/**"
         }
       ]
     },
-    "fs:default"
+    "fs:default",
+    "opener:default"
   ]
 }
