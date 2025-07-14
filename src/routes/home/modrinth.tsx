@@ -1,11 +1,65 @@
+// ...existing code...
+
+// Sadece install butonlu mod kartı
+interface ModCardProps {
+  mod: ModPack;
+  selectedGame: IGame | null;
+  installed: boolean;
+  onInstall: () => void;
+  onRemove: () => void;
+}
+
+function ModCard({ mod, selectedGame, installed, onInstall, onRemove }: ModCardProps) {
+  return (
+    <div className="bg-white/10 dark:bg-gray-800/10 backdrop-blur rounded-lg border border-primary/20 hover:border-primary transition-colors duration-200 cursor-pointer p-3">
+      <div className="flex items-start gap-3">
+        {mod.icon_url ? (
+          <img src={mod.icon_url} alt={mod.title} className="w-12 h-12 rounded-lg object-cover bg-white/20" />
+        ) : (
+          <div className="w-12 h-12 rounded-lg bg-white/20" />
+        )}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 truncate">{mod.title}</h3>
+          <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-2">{mod.description}</p>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400">{mod.downloads?.toLocaleString()} downloads</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {installed ? (
+              <>
+                <span className="px-2 py-1 text-xs font-medium rounded bg-green-600 text-white">Installed</span>
+                <button
+                  className="px-2 py-1 text-xs font-medium rounded transition-colors flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white"
+                  onClick={onRemove}
+                >
+                  Kaldır
+                </button>
+              </>
+            ) : (
+              <button
+                className="px-2 py-1 text-xs font-medium rounded transition-colors flex items-center gap-1 bg-primary hover:bg-primary/80 text-white"
+                disabled={!selectedGame}
+                onClick={onInstall}
+              >
+                Install
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import { downloadFile } from "@/tauri/commands";
 import { useOptions } from "@/store/options";
-import { useRemote } from "@/store/remote";
+import { useRemote, IGame } from "@/store/remote";
 import { exists } from "@tauri-apps/plugin-fs";
 import Alert from "@/kit/alert";
+import { fetch } from "@tauri-apps/plugin-http";
 
 export const Route = createFileRoute("/home/modrinth")({
   component: RouteComponent,
@@ -22,482 +76,193 @@ interface ModPack {
   categories?: string[];
 }
 
+// Dummy mod data (replace with API fetch)
+const DUMMY_MODS: ModPack[] = [
+  {
+    slug: "mod1",
+    title: "OptiFine",
+    description: "Optimize your Minecraft experience.",
+    downloads: 12345,
+    project_id: "1",
+  },
+  {
+    slug: "mod2",
+    title: "JourneyMap",
+    description: "Map your world as you explore.",
+    downloads: 54321,
+    project_id: "2",
+  },
+  {
+    slug: "mod3",
+    title: "JEI",
+    description: "Just Enough Items for recipes.",
+    downloads: 99999,
+    project_id: "3",
+  },
+];
+
 function RouteComponent() {
-  const [modpacks, setModpacks] = useState<ModPack[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pageLoading, setPageLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [downloading, setDownloading] = useState<string[]>([]);
-  const [selectedGameId, setSelectedGameId] = useState<string>("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [modInstallStatus, setModInstallStatus] = useState<{
-    [modId: string]: boolean;
-  }>({});
-  const [checkingInstallStatus, setCheckingInstallStatus] = useState(false);
-  const [modVersionCache, setModVersionCache] = useState<{
-    [modId: string]: any[];
-  }>({});
-  const [lastCheckedGame, setLastCheckedGame] = useState<string>("");
-  const localOptions = useOptions();
+  // State
+  const [search, setSearch] = useState("");
+  const [searching, setSearching] = useState(false);
+  const modsPerPage = 9;
+  const [page, setPage] = useState(1);
+  const [pageInput, setPageInput] = useState('1');
+  const [modsByPage, setModsByPage] = useState<{ [page: number]: ModPack[] }>({});
+  const [totalHits, setTotalHits] = useState<number>(0);
+  const [loadingPages, setLoadingPages] = useState<{ [page: number]: boolean }>({});
   const remote = useRemote();
+  const options = useOptions();
+  const games: IGame[] = remote?.games || [];
+  const [selectedGame, setSelectedGame] = useState<IGame | null>(null);
+  // installedMods: { [slug]: { [versionId: string]: boolean } }
+  const [installedMods, setInstalledMods] = useState<{ [slug: string]: { [versionId: string]: boolean } }>({});
+  // Seçilen modun versiyonu: { [slug]: versionId }
+  const [selectedVersions, setSelectedVersions] = useState<{ [slug: string]: string }>({});
+  const [showModal, setShowModal] = useState(false);
+  const [modalMod, setModalMod] = useState<ModPack | null>(null);
+  const [checkingMods, setCheckingMods] = useState(false);
+  const searchTimeout = useRef<number | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Debounce search query
+  // Kapanma için dışarıya tıklma
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 500); // 500ms delay
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest("[data-dropdown]")) {
-        setIsDropdownOpen(false);
+    if (!dropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-game-dropdown]")) {
+        setDropdownOpen(false);
       }
     };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [dropdownOpen]);
 
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isDropdownOpen]);
-
+  // Her sayfa için modları ayrı ayrı çek
   useEffect(() => {
-    const fetchModpacks = async () => {
-      if (currentPage === 1) {
-        setLoading(true);
-      } else {
-        setPageLoading(true);
-      }
+    const fetchPage = async (pageNum: number, silent = false) => {
+      setLoadingPages(lp => ({ ...lp, [pageNum]: !silent }));
       try {
-        const searchParam = debouncedSearchQuery
-          ? `&query=${encodeURIComponent(debouncedSearchQuery)}`
-          : "";
-        const response = await fetch(
-          `https://api.modrinth.com/v2/search?facets=[["project_type:mod"]]&limit=9&offset=${(currentPage - 1) * 25}${searchParam}`
-        );
-        const data = await response.json();
-        console.log(data);
-        setModpacks(data.hits);
-        setTotalPages(Math.ceil(data.total_hits / 25));
-
-        // Preload version data for faster installation checks
-        if (data.hits && data.hits.length > 0) {
-          const versionPromises = data.hits.map(async (mod: ModPack) => {
-            const modId = mod.project_id || mod.slug;
-            try {
-              const versionsResponse = await fetch(
-                `https://api.modrinth.com/v2/project/${modId}/version`
-              );
-              const versions = await versionsResponse.json();
-              return { modId, versions };
-            } catch (error) {
-              console.error(
-                `Failed to fetch versions for ${mod.title}:`,
-                error
-              );
-              return { modId, versions: [] };
-            }
-          });
-
-          // Load versions in the background
-          Promise.all(versionPromises).then((versionData) => {
-            const versionCache: { [modId: string]: any[] } = {};
-            versionData.forEach(({ modId, versions }) => {
-              versionCache[modId] = versions;
-            });
-            setModVersionCache((prev) => ({ ...prev, ...versionCache }));
-
-            // Always check installation status for new mods if we have a selected game
-            if (selectedGameId) {
-              checkModsInstallationStatus(data.hits, selectedGameId);
-            }
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch modpacks:", error);
+        const offset = (pageNum - 1) * modsPerPage;
+        const res = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent(search)}&limit=${modsPerPage}&offset=${offset}`);
+        const data = await res.json();
+        const mods: ModPack[] = (data.hits || []).map((mod: any) => ({
+          slug: mod.slug,
+          title: mod.title,
+          description: mod.description,
+          icon_url: mod.icon_url,
+          downloads: mod.downloads,
+          project_id: mod.project_id,
+        }));
+        setModsByPage(prev => ({ ...prev, [pageNum]: mods }));
+        if (typeof data.total_hits === 'number') setTotalHits(data.total_hits);
+      } catch {
+        // Hata olursa dummy modları göster
+        setModsByPage(prev => ({ ...prev, [pageNum]: DUMMY_MODS }));
+        setTotalHits(DUMMY_MODS.length);
       } finally {
-        setLoading(false);
-        setPageLoading(false);
+        setLoadingPages(lp => ({ ...lp, [pageNum]: false }));
       }
     };
+    // Aktif sayfa fetch
+    if (!modsByPage[page] && !loadingPages[page] && !searching) fetchPage(page);
+    // İlk sayfa ise arka planda 2. sayfayı da fetch et
+    if (page === 1 && !modsByPage[2] && !loadingPages[2] && !searching) fetchPage(2, true);
+    // Arama değişirse 1. sayfayı fetchle ve inputu sıfırla
+    if (!searching && page === 1 && !modsByPage[1]) fetchPage(1);
+    // eslint-disable-next-line
+  }, [page, search, searching]);
 
-    fetchModpacks();
-  }, [currentPage, debouncedSearchQuery]);
-
-  // Set default game selection
-  useEffect(() => {
-    if (remote.games && remote.games.length > 0 && !selectedGameId) {
-      setSelectedGameId(remote.games[0].id);
-    }
-  }, [remote.games, selectedGameId]);
-
-  // Check installation status when game selection changes
-  useEffect(() => {
-    if (selectedGameId && selectedGameId !== lastCheckedGame) {
-      // Clear previous status only when switching games
-      setModInstallStatus({});
-      setLastCheckedGame(selectedGameId);
-
-      if (
-        modpacks.length > 0 &&
-        Object.keys(modVersionCache).length > 0 &&
-        !checkingInstallStatus
-      ) {
-        checkModsInstallationStatus(modpacks, selectedGameId);
-      }
-    }
-  }, [
-    selectedGameId,
-    lastCheckedGame,
-  ]);
-
-  // Additional effect to ensure installation status is checked when all data is ready
-  useEffect(() => {
-    if (
-      selectedGameId &&
-      modpacks.length > 0 &&
-      Object.keys(modVersionCache).length > 0 &&
-      !checkingInstallStatus
-    ) {
-      // Check if we have any of the current mods in our status already
-      const currentModIds = modpacks.map(mod => mod.project_id || mod.slug);
-      const hasStatusForCurrentMods = currentModIds.some(modId => modInstallStatus.hasOwnProperty(modId));
-      
-      if (!hasStatusForCurrentMods) {
-        console.log("Triggering installation status check for new mods");
-        checkModsInstallationStatus(modpacks, selectedGameId);
-      }
-    }
-  }, [selectedGameId, modpacks, modVersionCache, checkingInstallStatus]);
-
-  // Debug effect to log status changes
-  useEffect(() => {
-    console.log("Mod install status updated:", modInstallStatus);
-  }, [modInstallStatus]);
-
-  const checkSingleModInstallation = async (modId: string, gameId: string) => {
-    try {
-      // Use cached version data if available
-      let versions = modVersionCache[modId];
-      if (!versions) {
-        const versionsResponse = await fetch(
-          `https://api.modrinth.com/v2/project/${modId}/version`
-        );
-        versions = await versionsResponse.json();
-
-        // Cache the versions for future use
-        setModVersionCache((prev) => ({
-          ...prev,
-          [modId]: versions,
-        }));
-      }
-
-      if (versions && versions.length > 0) {
-        // Check more versions to ensure we catch installed mods
-        const versionsToCheck = versions.slice(0, 10); // Check first 10 versions
-        
-        for (const version of versionsToCheck) {
-          if (version.files && Array.isArray(version.files)) {
-            for (const file of version.files) {
-              if (file.filename) {
-                const modPath = `${localOptions.appDir}/games/${gameId}/mods/${file.filename}`;
-                try {
-                  const fileExists = await exists(modPath);
-                  if (fileExists) {
-                    console.log(`Found installed mod: ${file.filename} for ${modId}`);
-                    return true;
-                  }
-                } catch (existsError) {
-                  console.warn(`Error checking file ${modPath}:`, existsError);
-                  // Continue checking other files instead of failing completely
-                }
-              }
-            }
-          }
-        }
-      }
-      return false;
-    } catch (error) {
-      console.error(
-        `Failed to check installation status for mod ${modId}:`,
-        error
-      );
-      return false;
-    }
+  // Arama input debouncing
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearch(value);
+    setSearching(true);
+    setPage(1);
+    setPageInput('1');
+    if (searchTimeout.current) window.clearTimeout(searchTimeout.current);
+    searchTimeout.current = window.setTimeout(() => {
+      setSearching(false);
+      setModsByPage({});
+    }, 700); // 700ms debounce
   };
 
-  const checkModsInstallationStatus = async (
-    mods: ModPack[],
-    gameId: string
-  ) => {
-    if (checkingInstallStatus) return; // Prevent multiple simultaneous checks
+  // Mod dosya adlarını cache'lemek için
+  const modFileNameCache = useRef<{ [slug: string]: string }>({});
 
-    console.log(`Checking installation status for ${mods.length} mods in game: ${gameId}`);
-    setCheckingInstallStatus(true);
-
-    try {
-      // Process mods in smaller batches to improve perceived performance
-      const batchSize = 5;
-      const batches = [];
-      for (let i = 0; i < mods.length; i += batchSize) {
-        batches.push(mods.slice(i, i + batchSize));
-      }
-
-      for (const batch of batches) {
-        const checkPromises = batch.map(async (mod) => {
-          const modId = mod.project_id || mod.slug;
+  useEffect(() => {
+    const currentMods = modsByPage[page] || [];
+    if (!selectedGame || currentMods.length === 0) {
+      setInstalledMods({});
+      setCheckingMods(false);
+      return;
+    }
+    const checkMods = async () => {
+      setCheckingMods(true);
+      const results: { [slug: string]: { [versionId: string]: boolean } } = {};
+      const modsPath = `${options.appDir}/games/${selectedGame.id}/mods`;
+      await Promise.all(currentMods.map(async (mod) => {
+        // Tüm versiyonları çek
+        const gameVersion = selectedGame.minecraft?.version;
+        let modVersions: any[] = [];
+        try {
+          const res = await fetch(`https://api.modrinth.com/v2/project/${mod.slug}/version?game_versions=[\"${gameVersion}\"]`);
+          modVersions = await res.json();
+        } catch {}
+        results[mod.slug] = {};
+        for (const v of modVersions) {
+          const fileObj = v.files?.[0];
+          let fileName = fileObj?.filename || `${mod.slug}.jar`;
+          const modPath = `${modsPath}/${fileName}`;
           try {
-            const isInstalled = await checkSingleModInstallation(modId, gameId);
-            return { modId, isInstalled, error: null };
-          } catch (error) {
-            console.error(`Error checking mod ${modId}:`, error);
-            return { modId, isInstalled: false, error };
+            results[mod.slug][v.id] = await exists(modPath);
+          } catch {
+            results[mod.slug][v.id] = false;
           }
-        });
-
-        const results = await Promise.all(checkPromises);
-
-        // Update statuses incrementally after each batch
-        setModInstallStatus((prevStatus) => {
-          const newStatus = { ...prevStatus };
-          results.forEach(({ modId, isInstalled }) => {
-            newStatus[modId] = isInstalled;
-          });
-          return newStatus;
-        });
-
-        // Small delay between batches to prevent UI blocking
-        if (batches.indexOf(batch) < batches.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 50));
         }
-      }
-      
-      const totalInstalled = Object.values(modInstallStatus).filter(Boolean).length;
-      console.log(`Installation status check completed: ${totalInstalled} mods installed`);
-    } catch (error) {
-      console.error("Error checking installation status:", error);
-    } finally {
-      setCheckingInstallStatus(false);
-    }
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    if (debouncedSearchQuery !== query) {
-      setCurrentPage(1); // Reset to first page when searching
-    }
-  };
-
-  const handleDownload = async (
-    modpack: ModPack,
-    gameId: string,
-    options?: {
-      version?: string;
-      minecraftVersion?: string;
-      modLoader?: string;
-    }
-  ) => {
-    const modId = modpack.project_id || modpack.slug;
-
-    try {
-      setDownloading((prev) => [...prev, modId]);
-
-      // Get available versions for the mod
-      const versionsResponse = await fetch(
-        `https://api.modrinth.com/v2/project/${modId}/version`
-      );
-      const versions = await versionsResponse.json();
-
-      if (!versions || versions.length === 0) {
-        throw new Error("No versions available for this mod");
-      }
-
-      // Filter versions based on parameters
-      let filteredVersions = versions;
-
-      if (options?.minecraftVersion) {
-        filteredVersions = filteredVersions.filter((version: any) =>
-          version.game_versions.includes(options.minecraftVersion)
-        );
-      }
-
-      if (options?.modLoader) {
-        filteredVersions = filteredVersions.filter((version: any) =>
-          version.loaders.includes(options.modLoader!.toLowerCase())
-        );
-      }
-
-      // Get the latest compatible version or specified version
-      const targetVersion = options?.version
-        ? filteredVersions.find(
-            (v: any) => v.version_number === options.version
-          )
-        : filteredVersions[0]; // Latest version
-
-      if (!targetVersion) {
-        throw new Error("No compatible version found");
-      }
-
-      // Get the primary file from the version
-      const primaryFile =
-        targetVersion.files.find((file: any) => file.primary) ||
-        targetVersion.files[0];
-
-      if (!primaryFile) {
-        throw new Error("No download file found");
-      }
-
-      // Get the selected game info
-      const selectedGame = remote.games?.find((game) => game.id === gameId);
-      if (!selectedGame) {
-        throw new Error("Selected game not found");
-      }
-
-      // Create download path for the specific game
-      const downloadPath = `${localOptions.appDir}/games/${gameId}/mods/${primaryFile.filename}`;
-
-      // Check if file already exists before downloading
-      const fileExists = await exists(downloadPath);
-      if (fileExists) {
-        Alert({
-          title: "Warning",
-          message: `${modpack.title} is already installed for this game.`,
-        });
-        return;
-      }
-
-      console.log(
-        `Downloading ${modpack.title} to game: ${selectedGame.title || selectedGame.id}`
-      );
-      console.log(`Download path: ${downloadPath}`);
-
-      // Download the file using Tauri command
-      await downloadFile(primaryFile.url, downloadPath);
-
-      // Wait a moment for the file to be written
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Force update the status immediately
-      setModInstallStatus((prev) => ({
-        ...prev,
-        [modId]: true, // Set to true immediately
+        // Varsayılan seçili versiyon: en güncel
+        if (modVersions.length > 0 && !(mod.slug in selectedVersions)) {
+          setSelectedVersions((prev) => ({ ...prev, [mod.slug]: modVersions[0].id }));
+        }
       }));
+      setInstalledMods(results);
+      setCheckingMods(false);
+    };
+    checkMods();
+  }, [selectedGame, modsByPage, options.appDir, page]);
 
-      // Also update the cache to reflect the new file
-      if (modVersionCache[modId]) {
-        // Find the downloaded file in the versions and mark it as installed
-        const targetFile = primaryFile.filename;
-        console.log(`Mod ${modpack.title} (${targetFile}) has been installed`);
+  // Yükleme işlemi
+  const handleInstall = async (mod: ModPack) => {
+    if (!selectedGame) return;
+    setModalMod(mod);
+    setShowModal(true);
+    try {
+      // Seçili versiyonu bul
+      const versionId = selectedVersions[mod.slug];
+      if (!versionId) throw new Error("Mod versiyonu seçilmedi.");
+      // Versiyon detayını çek
+      const res = await fetch(`https://api.modrinth.com/v2/version/${versionId}`);
+      const version = await res.json();
+      const fileObj = version.files?.[0];
+      if (!fileObj || !fileObj.url || !fileObj.filename) throw new Error("Mod dosyası bulunamadı.");
+      const modsPath = `${options.appDir}/games/${selectedGame.id}/mods`;
+      await downloadFile(fileObj.url, `${modsPath}/${fileObj.filename}`);
+      setInstalledMods((prev) => ({
+        ...prev,
+        [mod.slug]: { ...prev[mod.slug], [versionId]: true },
+      }));
+    } catch (err) {
+      let msg = "Bilinmeyen hata";
+      if (err && typeof err === "object" && "message" in err) {
+        msg = (err as any).message;
+      } else if (typeof err === "string") {
+        msg = err;
       }
-
-      Alert({
-        title: "Success",
-        message: `${modpack.title} has been successfully installed!`,
-      });
-
-      console.log(
-        `Successfully downloaded ${modpack.title} for ${selectedGame.title || selectedGame.id}`
-      );
-    } catch (error) {
-      console.error(`Failed to download ${modpack.title}:`, error);
-      Alert({
-        title: "Error",
-        message: `Failed to download ${modpack.title}: ${error instanceof Error ? error.message : "Unknown error"}`,
-      });
+      Alert({ title: "İndirme Hatası", message: "Mod indirilemedi: " + msg });
     } finally {
-      setDownloading((prev) => prev.filter((id) => id !== modId));
+      setShowModal(false);
     }
   };
-
-  const isModInstalled = (modId: string): boolean => {
-    return modInstallStatus[modId] || false;
-  };
-
-  const isModBeingChecked = (modId: string): boolean => {
-    // If we're checking install status and this mod doesn't have a status yet, it's being checked
-    return checkingInstallStatus && !modInstallStatus.hasOwnProperty(modId);
-  };
-
-  const handleInstallClick = (modpack: ModPack) => {
-    if (!selectedGameId) {
-      Alert({ message: "Please select a game first.", title: "warning" });
-      return;
-    }
-
-    const modId = modpack.project_id || modpack.slug;
-    if (isModInstalled(modId)) {
-      Alert({
-        title: "Info",
-        message: `${modpack.title} is already installed for the selected game.`,
-      });
-      return;
-    }
-
-    const selectedGame = remote.games?.find(
-      (game) => game.id === selectedGameId
-    );
-    if (!selectedGame) {
-      throw new Error("Selected game not found");
-    }
-    handleDownload(modpack, selectedGameId, {
-      minecraftVersion: selectedGame.minecraft?.version,
-      modLoader: selectedGame.minecraft?.loader.type,
-    });
-
-    // Download directly to the selected game
-  };
-
-  const getVisiblePages = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-
-    for (
-      let i = Math.max(2, currentPage - delta);
-      i <= Math.min(totalPages - 1, currentPage + delta);
-      i++
-    ) {
-      range.push(i);
-    }
-
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1, "...");
-    } else {
-      rangeWithDots.push(1);
-    }
-
-    rangeWithDots.push(...range);
-
-    if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push("...", totalPages);
-    } else {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots;
-  };
-
-  if (loading)
-    return (
-      <div className="h-full flex items-center justify-center bg-darker">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-white/70 text-sm">Loading modpacks...</p>
-        </div>
-      </div>
-    );
 
   return (
     <motion.div className="min-h-0 bg-darker relative size-full flex flex-col">
@@ -512,15 +277,17 @@ function RouteComponent() {
       <div className="p-8 pb-4">
         <div className="relative z-10">
           <span className="text-4xl flex font-bold">Browse</span>
+
           {/* Search Bar and Game Selector */}
           <div className="mb-6 flex gap-4 items-end">
             <div className="relative max-w-md mt-2 flex-1">
               <input
                 type="text"
                 placeholder="Search mods..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
                 className="w-full px-4 py-3 pl-11 bg-white/10 backdrop-blur border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-primary transition-colors"
+                value={search}
+                onChange={handleSearchChange}
+                disabled={searching}
               />
               <svg
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60"
@@ -537,204 +304,117 @@ function RouteComponent() {
               </svg>
             </div>
 
-            {/* Game Selector */}
-            <div className="min-w-[220px] relative" data-dropdown>
-              <label className="block text-white/70 text-xs mb-1">
-                Install to Game:
-              </label>
+            <div className="min-w-[220px] relative" data-game-dropdown>
+              <label className="block text-xs mb-1">Install to Game:</label>
               <div className="relative">
                 <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full px-4 py-3 bg-white/10 backdrop-blur border border-white/20 rounded-lg text-white focus:outline-none focus:border-primary transition-all duration-200 flex items-center justify-between group hover:bg-white/15"
+                  type="button"
+                  className="w-full px-4 py-3 backdrop-blur bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-primary transition-all duration-200 flex items-center justify-between group hover:bg-white/15"
+                  onClick={() => setDropdownOpen((open) => !open)}
                 >
-                  <span className="text-sm">
-                    {selectedGameId
-                      ? remote.games?.find((game) => game.id === selectedGameId)
-                          ?.title || selectedGameId
-                      : "Select a game..."}
-                  </span>
-                  <svg
-                    className={`w-4 h-4 text-white/60 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
+                  <span className="text-sm truncate">{selectedGame ? (selectedGame.title || selectedGame.id) : "Select a game..."}</span>
+                  <svg className={`w-4 h-4 text-white/60 ml-2 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-
-                {isDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 backdrop-blur-md border border-white/20 rounded-lg shadow-xl z-50 overflow-hidden">
-                    {!selectedGameId && (
-                      <div className="px-4 py-3 text-white/50 text-xs border-b border-white/10">
-                        Choose a game to install mods to
-                      </div>
-                    )}
-                    <div className="max-h-48 overflow-y-auto">
-                      {remote.games?.map((game) => (
-                        <button
-                          key={game.id}
-                          onClick={() => {
-                            setSelectedGameId(game.id);
-                            setIsDropdownOpen(false);
-                          }}
-                          className={`w-full px-4 py-3 text-left text-sm transition-colors duration-150 flex items-center gap-3 hover:bg-white/10 ${
-                            selectedGameId === game.id
-                              ? "bg-primary/20 text-primary"
-                              : "text-white"
-                          }`}
-                        >
-                          <div
-                            className={`w-2 h-2 rounded-full ${
-                              selectedGameId === game.id
-                                ? "bg-primary"
-                                : "bg-white/20"
-                            }`}
-                          />
-                          <span className="truncate">
-                            {game.title || game.id}
-                          </span>
-                          {selectedGameId === game.id && (
-                            <svg
-                              className="w-4 h-4 ml-auto text-primary"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          )}
-                        </button>
-                      ))}
-                    </div>
+                {dropdownOpen && (
+                  <div className="absolute left-0 right-0 mt-2 z-50 rounded-lg shadow-xl border border-white/20 backdrop-blur bg-white/10 text-white overflow-hidden" style={{background: "rgba(30,30,30,0.7)"}}>
+                    {games.map((game) => (
+                      <button
+                        key={game.id}
+                        className={`w-full text-left px-4 py-3 text-sm hover:bg-primary/20 transition-colors duration-150 ${selectedGame?.id === game.id ? "bg-primary/30" : ""}`}
+                        onClick={() => {
+                          setSelectedGame(game);
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="truncate">{game.title || game.id}</span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {pageLoading && (
-            <div className="absolute inset-0 bg-darker/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                <p className="text-white/70 text-xs">Loading...</p>
-              </div>
-            </div>
-          )}
           <div className="grid grid-cols-3 gap-3">
-            {modpacks.map((modpack) => (
-              <div
-                key={modpack.slug}
-                className="bg-white/10 dark:bg-gray-800/10 backdrop-blur rounded-lg border border-primary/20 hover:border-primary transition-colors duration-200 cursor-pointer p-3"
-              >
-                <div className="flex items-start gap-3">
-                  {modpack.icon_url && (
-                    <img
-                      src={modpack.icon_url}
-                      alt={modpack.title}
-                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 truncate">
-                      {modpack.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-2">
-                      {modpack.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {modpack.downloads.toLocaleString()} downloads
-                      </span>
-                      <button
-                        onClick={() => handleInstallClick(modpack)}
-                        disabled={
-                          downloading.includes(
-                            modpack.project_id || modpack.slug
-                          ) ||
-                          isModInstalled(modpack.project_id || modpack.slug) ||
-                          !selectedGameId
-                        }
-                        className="px-2 py-1 bg-primary hover:bg-primary/80 disabled:bg-primary/50 text-white text-xs font-medium rounded transition-colors disabled:cursor-not-allowed flex items-center gap-1"
-                      >
-                        {downloading.includes(
-                          modpack.project_id || modpack.slug
-                        ) ? (
-                          <>
-                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
-                            <span>Downloading...</span>
-                          </>
-                        ) : isModInstalled(
-                            modpack.project_id || modpack.slug
-                          ) ? (
-                          "Installed"
-                        ) : !selectedGameId ? (
-                          "Select Game"
-                        ) : isModBeingChecked(modpack.project_id || modpack.slug) ? (
-                          <>
-                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
-                            <span>Checking...</span>
-                          </>
-                        ) : (
-                          "Install"
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {(modsByPage[page] || []).map((mod) => {
+              // Mod yüklü mü? En güncel versiyonun id'si selectedVersions[mod.slug], installedMods[mod.slug][versionId] true ise yüklü
+              const versionId = selectedVersions[mod.slug];
+              const installed = !!(versionId && installedMods[mod.slug] && installedMods[mod.slug][versionId]);
+              return (
+                <ModCard
+                  key={mod.slug}
+                  mod={mod}
+                  selectedGame={selectedGame}
+                  installed={installed}
+                  onInstall={() => handleInstall(mod)}
+                  onRemove={() => { /* Kaldırma logicini sen ekleyeceksin */ }}
+                />
+              );
+            })}
           </div>
 
-          {/* Pagination */}
           <div className="mt-8 mb-4">
             <div className="flex items-center justify-center gap-2 bg-black/30 backdrop-blur-md border border-white/10 p-3 rounded-lg shadow-lg w-fit mx-auto">
               <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed border border-white/20 rounded-md transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Previous
-              </button>
-              <div className="flex gap-1">
-                {getVisiblePages().map((page, index) => (
-                  <button
-                    key={index}
-                    onClick={() =>
-                      typeof page === "number" && handlePageChange(page)
+                className="px-3 py-1.5 text-xs font-medium text-white bg-white/5 hover:bg-white/10 border border-white/20 rounded-md transition-all duration-200 hover:scale-105 active:scale-95"
+                disabled={page === 1}
+                onClick={() => { setPage((p) => { const np = Math.max(1, p - 1); setPageInput(np.toString()); return np; }); }}
+              >Previous</button>
+              <div className="flex gap-1 items-center">
+                <input
+                  type="number"
+                  min={1}
+                  max={Math.max(1, Math.ceil(totalHits / modsPerPage))}
+                  value={pageInput}
+                  onChange={e => setPageInput(e.target.value.replace(/^0+/, ''))}
+                  onBlur={() => {
+                    let n = parseInt(pageInput, 10);
+                    if (isNaN(n) || n < 1) n = 1;
+                    if (n > Math.ceil(totalHits / modsPerPage)) n = Math.ceil(totalHits / modsPerPage);
+                    setPage(n);
+                    setPageInput(n.toString());
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      let n = parseInt(pageInput, 10);
+                      if (isNaN(n) || n < 1) n = 1;
+                      if (n > Math.ceil(totalHits / modsPerPage)) n = Math.ceil(totalHits / modsPerPage);
+                      setPage(n);
+                      setPageInput(n.toString());
                     }
-                    disabled={page === "..."}
-                    className={`min-w-[32px] h-8 text-xs font-medium rounded-md transition-all duration-200 hover:scale-105 active:scale-95 ${
-                      page === currentPage
-                        ? "bg-primary text-white border border-primary shadow-md shadow-primary/20"
-                        : page === "..."
-                          ? "text-gray-400 cursor-default bg-transparent border-transparent"
-                          : "text-white bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
+                  }}
+                  className="w-12 h-8 text-center rounded bg-black/40 border border-white/20 text-white mx-1 focus:outline-none focus:border-primary"
+                  style={{ MozAppearance: 'textfield' }}
+                />
+                <span className="text-white/70 text-xs">/ {Math.max(1, Math.ceil(totalHits / modsPerPage))}</span>
               </div>
               <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed border border-white/20 rounded-md transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Next
-              </button>
+                className="px-3 py-1.5 text-xs font-medium text-white bg-white/5 hover:bg-white/10 border border-white/20 rounded-md transition-all duration-200 hover:scale-105 active:scale-95"
+                disabled={page === Math.max(1, Math.ceil(totalHits / modsPerPage))}
+                onClick={() => { setPage((p) => { const np = Math.min(Math.max(1, Math.ceil(totalHits / modsPerPage)), p + 1); setPageInput(np.toString()); return np; }); }}
+              >Next</button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Yükleme Modalı */}
+      {(showModal && modalMod) || (loadingPages[page] && !(modsByPage[page] && modsByPage[page].length)) || (!modsByPage[page] && !loadingPages[page]) || checkingMods ? (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg w-[350px] text-center">
+            <h2 className="text-lg font-bold mb-2">Mod Yükleniyor</h2>
+            <p className="mb-4">Modlar kontrol ediliyor...</p>
+            <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-4">
+              <div className="h-2 bg-primary animate-pulse" style={{ width: "100%" }} />
+            </div>
+            <span className="text-xs text-gray-500">Lütfen bekleyin, modlar kontrol ediliyor veya yükleniyor.</span>
+          </div>
+        </div>
+      ) : null}
     </motion.div>
   );
 }

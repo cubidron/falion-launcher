@@ -38,6 +38,9 @@
         },
         {
           "url": "https://*.npoint.io"
+        },
+        {
+          "url": "https://api.modrinth.com/*"
         }
       ]
     },
