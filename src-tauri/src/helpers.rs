@@ -113,11 +113,23 @@ pub async fn synchronize_files(
     let mut files_to_be_downloaded = vec![];
 
     for remote_file in &remote_files {
-        let local_path = profile_dir.join(&remote_file.path);
-        let ignored_path = if local_path.starts_with(&mods_dir) {
+        let orig_local_path = profile_dir.join(&remote_file.path);
+        let ignored_path = if orig_local_path.starts_with(&mods_dir) {
             Some(mods_dir.join(format!("{}.ignored", &remote_file.name)))
         } else {
             None
+        };
+
+        // mods klasöründeyse local path'e -v ekle
+        let local_path = if orig_local_path.starts_with(&mods_dir) && orig_local_path.extension().and_then(|e| e.to_str()) == Some("jar") {
+            if let Some(file_name) = orig_local_path.file_name().and_then(|f| f.to_str()) {
+                let new_file_name = format!("{}-v.jar", file_name.trim_end_matches(".jar"));
+                orig_local_path.with_file_name(new_file_name)
+            } else {
+                orig_local_path.clone()
+            }
+        } else {
+            orig_local_path.clone()
         };
 
         let should_download = if let Some(ignored_path) = &ignored_path {
@@ -137,7 +149,7 @@ pub async fn synchronize_files(
                             "{}/files/game/{}/{}",
                             remote_url, profile_name, remote_file.path
                         ),
-                        local_path,
+                        local_path.clone(),
                         FileType::Custom,
                     ));
                 }
@@ -147,7 +159,7 @@ pub async fn synchronize_files(
                         "{}/files/game/{}/{}",
                         remote_url, profile_name, remote_file.path
                     ),
-                    local_path,
+                    local_path.clone(),
                     FileType::Custom,
                 ));
             }
@@ -169,12 +181,14 @@ pub async fn synchronize_files(
                         "{}/files/game/{}/{}",
                         remote_url, profile_name, remote_file.path
                     ),
-                    local_path,
+                    local_path.clone(),
                     FileType::Custom,
                 ));
             }
         }
     }
+
+    println!("{:?}", files_to_be_downloaded.iter().map(|(url, path, _)| (url, path.display().to_string())).collect::<Vec<_>>());
 
     download_multiple(files_to_be_downloaded, Some(&emitter), Some(&client)).await?;
 
@@ -187,10 +201,6 @@ pub async fn synchronize_files(
             .to_str()
             .ok_or(crate::Error::General("Invalid path".to_string()))?;
 
-        let is_remote_file = remote_files
-            .iter()
-            .any(|rf| rf.path.replace("/", MAIN_SEPARATOR_STR) == relative_path);
-
         let is_excluded = exclude
             .iter()
             .any(|e| relative_path.starts_with(&e.replace("/", MAIN_SEPARATOR_STR)));
@@ -199,9 +209,26 @@ pub async fn synchronize_files(
             .starts_with(format!("mods{}", MAIN_SEPARATOR_STR).as_str())
             && relative_path.ends_with(".ignored");
 
-        if !is_remote_file && !is_excluded && !is_ignored_mod {
-            fs::remove_file(local_file).await?;
+        let is_v_mod = relative_path
+            .starts_with(format!("mods{}", MAIN_SEPARATOR_STR).as_str())
+            && relative_path.ends_with("-v.jar");
+
+        // Sadece mods klasöründe ve -v ile biten dosyalar kontrol edilecek
+        if is_v_mod {
+            // -v'yi çıkarıp remotta karşılığı var mı bak
+            let compare_path = if let Some(stripped) = relative_path.strip_suffix("-v.jar") {
+                format!("{}{}.jar", stripped, "")
+            } else {
+                relative_path.to_string()
+            };
+            let is_remote_file = remote_files
+                .iter()
+                .any(|rf| rf.path.replace("/", MAIN_SEPARATOR_STR) == compare_path);
+            if !is_remote_file && !is_excluded && !is_ignored_mod {
+                fs::remove_file(local_file).await?;
+            }
         }
+        // -v ile bitmeyen mods dosyalarına dokunma
     }
 
     Ok(())

@@ -17,6 +17,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as HomeIndexImport } from './routes/home/index'
 import { Route as AuthIndexImport } from './routes/auth/index'
 import { Route as HomeSettingsImport } from './routes/home/settings'
+import { Route as HomeProfileImport } from './routes/home/profile'
 import { Route as HomeModrinthImport } from './routes/home/modrinth'
 import { Route as HomeAboutImport } from './routes/home/about'
 import { Route as AuthConfirmImport } from './routes/auth/confirm'
@@ -56,6 +57,12 @@ const AuthIndexRoute = AuthIndexImport.update({
 const HomeSettingsRoute = HomeSettingsImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => HomeRouteRoute,
+} as any)
+
+const HomeProfileRoute = HomeProfileImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => HomeRouteRoute,
 } as any)
 
@@ -123,6 +130,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeModrinthImport
       parentRoute: typeof HomeRouteImport
     }
+    '/home/profile': {
+      id: '/home/profile'
+      path: '/profile'
+      fullPath: '/home/profile'
+      preLoaderRoute: typeof HomeProfileImport
+      parentRoute: typeof HomeRouteImport
+    }
     '/home/settings': {
       id: '/home/settings'
       path: '/settings'
@@ -166,6 +180,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 interface HomeRouteRouteChildren {
   HomeAboutRoute: typeof HomeAboutRoute
   HomeModrinthRoute: typeof HomeModrinthRoute
+  HomeProfileRoute: typeof HomeProfileRoute
   HomeSettingsRoute: typeof HomeSettingsRoute
   HomeIndexRoute: typeof HomeIndexRoute
 }
@@ -173,6 +188,7 @@ interface HomeRouteRouteChildren {
 const HomeRouteRouteChildren: HomeRouteRouteChildren = {
   HomeAboutRoute: HomeAboutRoute,
   HomeModrinthRoute: HomeModrinthRoute,
+  HomeProfileRoute: HomeProfileRoute,
   HomeSettingsRoute: HomeSettingsRoute,
   HomeIndexRoute: HomeIndexRoute,
 }
@@ -188,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/auth/confirm': typeof AuthConfirmRoute
   '/home/about': typeof HomeAboutRoute
   '/home/modrinth': typeof HomeModrinthRoute
+  '/home/profile': typeof HomeProfileRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth/': typeof AuthIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -198,6 +215,7 @@ export interface FileRoutesByTo {
   '/auth/confirm': typeof AuthConfirmRoute
   '/home/about': typeof HomeAboutRoute
   '/home/modrinth': typeof HomeModrinthRoute
+  '/home/profile': typeof HomeProfileRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth': typeof AuthIndexRoute
   '/home': typeof HomeIndexRoute
@@ -211,6 +229,7 @@ export interface FileRoutesById {
   '/auth/confirm': typeof AuthConfirmRoute
   '/home/about': typeof HomeAboutRoute
   '/home/modrinth': typeof HomeModrinthRoute
+  '/home/profile': typeof HomeProfileRoute
   '/home/settings': typeof HomeSettingsRoute
   '/auth/': typeof AuthIndexRoute
   '/home/': typeof HomeIndexRoute
@@ -225,6 +244,7 @@ export interface FileRouteTypes {
     | '/auth/confirm'
     | '/home/about'
     | '/home/modrinth'
+    | '/home/profile'
     | '/home/settings'
     | '/auth/'
     | '/home/'
@@ -234,6 +254,7 @@ export interface FileRouteTypes {
     | '/auth/confirm'
     | '/home/about'
     | '/home/modrinth'
+    | '/home/profile'
     | '/home/settings'
     | '/auth'
     | '/home'
@@ -245,6 +266,7 @@ export interface FileRouteTypes {
     | '/auth/confirm'
     | '/home/about'
     | '/home/modrinth'
+    | '/home/profile'
     | '/home/settings'
     | '/auth/'
     | '/home/'
@@ -293,6 +315,7 @@ export const routeTree = rootRoute
       "children": [
         "/home/about",
         "/home/modrinth",
+        "/home/profile",
         "/home/settings",
         "/home/"
       ]
@@ -307,6 +330,10 @@ export const routeTree = rootRoute
     },
     "/home/modrinth": {
       "filePath": "home/modrinth.tsx",
+      "parent": "/home"
+    },
+    "/home/profile": {
+      "filePath": "home/profile.tsx",
       "parent": "/home"
     },
     "/home/settings": {
