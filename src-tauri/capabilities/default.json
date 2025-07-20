@@ -39,6 +39,18 @@
         },
         {
           "url": "https://api.modrinth.com/*"
+        },
+        {
+          "url": "https://launchermeta.mojang.com/mc/game/version_manifest.json"
+        },
+        {
+          "url": "https://meta.fabricmc.net/*"
+        },
+        {
+          "url": "https://meta.quiltmc.org/*"
+        },
+        {
+          "url": "https://files.minecraftforge.net/*"
         }
       ]
     },
@@ -52,6 +64,10 @@
     },
     {
       "identifier": "fs:allow-remove",
+      "allow": [{ "path": "$DATA/.falion/**" }]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
       "allow": [{ "path": "$DATA/.falion/**" }]
     },
     "fs:default",
